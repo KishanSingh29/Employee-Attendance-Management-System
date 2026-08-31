@@ -31,9 +31,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * Stable public identifier exposed by the API instead of the numeric primary key.
-     */
+    
     @Column(name = "user_id", nullable = false, unique = true, updatable = false, length = 36)
     private String userId;
 
