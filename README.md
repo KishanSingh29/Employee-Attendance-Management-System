@@ -5,7 +5,10 @@ Microservices-based attendance management platform.
 | Service             | Port | Status         | Description                              |
 |---------------------|------|----------------|------------------------------------------|
 | `authservice`       | 8081 | ✅ implemented  | Auth, JWT, users, role-based access      |
-| `attendanceservice` | —    | ⏳ planned      | Check-in / check-out, attendance records |
-| `leaveservice`      | —    | ⏳ planned      | Leave requests & approvals               |
+| `attendanceservice` | 8082 | ✅ implemented  | Check-in / check-out, attendance reports |
+| `leaveservice`      | 8083 | ✅ implemented  | Leave apply / approval, balances, deductions |
 
-See [`authservice/README.md`](authservice/README.md) for setup and API details.
+Setup and API details:
+[`authservice/README.md`](authservice/README.md) ·
+[`attendanceservice/README.md`](attendanceservice/README.md) ·
+[`leaveservice/README.md`](leaveservice/README.md)

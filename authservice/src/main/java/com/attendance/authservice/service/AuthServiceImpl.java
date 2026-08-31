@@ -11,6 +11,8 @@ import com.attendance.authservice.dto.response.UserResponse;
 import com.attendance.authservice.entity.BlacklistedToken;
 import com.attendance.authservice.entity.RefreshToken;
 import com.attendance.authservice.entity.User;
+import com.attendance.authservice.event.UserEventProducer;
+import com.attendance.authservice.event.UserRegisteredEvent;
 import com.attendance.authservice.exception.EmailAlreadyExistsException;
 import com.attendance.authservice.exception.InvalidTokenException;
 import com.attendance.authservice.exception.ResourceNotFoundException;
@@ -37,19 +39,22 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final EmployeeIdGenerator employeeIdGenerator;
+    private final UserEventProducer userEventProducer;
 
     public AuthServiceImpl(UserRepository userRepository,
                            BlacklistedTokenRepository blacklistedTokenRepository,
                            PasswordEncoder passwordEncoder,
                            JwtService jwtService,
                            RefreshTokenService refreshTokenService,
-                           EmployeeIdGenerator employeeIdGenerator) {
+                           EmployeeIdGenerator employeeIdGenerator,
+                           UserEventProducer userEventProducer) {
         this.userRepository = userRepository;
         this.blacklistedTokenRepository = blacklistedTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
         this.employeeIdGenerator = employeeIdGenerator;
+        this.userEventProducer = userEventProducer;
     }
 
     @Override
@@ -70,6 +75,8 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         User saved = userRepository.save(user);
+
+        userEventProducer.publishUserRegistered(UserRegisteredEvent.from(saved));
 
         return new RegisterResponse(true, "Employee registered successfully",
                 saved.getEmployeeId(), saved.getUserId());

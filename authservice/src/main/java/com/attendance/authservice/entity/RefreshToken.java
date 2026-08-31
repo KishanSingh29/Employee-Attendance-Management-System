@@ -30,9 +30,7 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * Opaque token value (UUID) handed to the client.
-     */
+    
     @Column(nullable = false, unique = true, length = 36)
     private String token;
 
