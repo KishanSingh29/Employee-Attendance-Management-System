@@ -81,3 +81,5 @@ public class AuthController {
         return ResponseEntity.ok(authService.logout(authorizationHeader));
     }
 }
+
+//for rest api
