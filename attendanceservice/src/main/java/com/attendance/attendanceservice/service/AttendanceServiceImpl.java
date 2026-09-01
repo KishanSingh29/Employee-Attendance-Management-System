@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
@@ -96,12 +97,17 @@ public class AttendanceServiceImpl implements AttendanceService {
         if (attendance.getCheckOut() != null) {
             throw new AttendanceException("You have already checked out today at " + attendance.getCheckOut());
         }
-        if (now.isBefore(attendance.getCheckIn())) {
+
+        // Span the real dates so an overnight shift (check-in and check-out on
+        // different calendar days) does not produce zero or negative hours.
+        LocalDateTime checkInDateTime = LocalDateTime.of(attendance.getDate(), attendance.getCheckIn());
+        LocalDateTime checkOutDateTime = LocalDateTime.of(LocalDate.now(), now);
+        if (checkOutDateTime.isBefore(checkInDateTime)) {
             throw new AttendanceException("Check-out time cannot be earlier than check-in time");
         }
 
-        double workingHours = roundToTwo(
-                Duration.between(attendance.getCheckIn(), now).toMinutes() / 60.0);
+        Duration duration = Duration.between(checkInDateTime, checkOutDateTime);
+        double workingHours = roundToTwo(duration.toMinutes() / 60.0);
 
         AttendanceStatus status;
         if (workingHours < halfDayHours) {
