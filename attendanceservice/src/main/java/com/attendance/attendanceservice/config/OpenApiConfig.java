@@ -11,15 +11,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-    private static final String SECURITY_SCHEME = "bearerAuth";
+    private static final String SECURITY_SCHEME = "Bearer Auth";
 
     @Bean
     public OpenAPI attendanceServiceOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
                         .title("Attendance Service API")
-                        .description("Check-in / check-out and attendance reporting for the "
-                                + "Employee Attendance Management System")
+                        .description("Employee check-in/check-out tracking. LATE detection after 9:30 AM, "
+                                + "HALF_DAY under 4 hours. Working hours auto-calculated. HR dashboard and reports.")
                         .version("v1"))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME))
                 .components(new Components().addSecuritySchemes(SECURITY_SCHEME,

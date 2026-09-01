@@ -10,6 +10,10 @@ import com.attendance.attendanceservice.security.CurrentUserProvider;
 import com.attendance.attendanceservice.service.AttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +31,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/attendance")
 @PreAuthorize("hasAnyRole('EMPLOYEE', 'HR')")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "Bearer Auth")
 @Tag(name = "Attendance", description = "Check-in / check-out and the caller's own attendance data")
 public class AttendanceController {
 
@@ -43,8 +47,19 @@ public class AttendanceController {
     }
 
     @PostMapping("/checkin")
-    @Operation(summary = "Check in for today",
-            description = "Marks the caller present. After 09:30 the status becomes LATE. A second check-in is rejected.")
+    @Tag(name = "Attendance")
+    @Operation(summary = "Check In",
+            description = "Mark attendance. Before 9:30 AM = PRESENT, After 9:30 AM = LATE. Only one check-in per day allowed.")
+    @SecurityRequirement(name = "Bearer Auth")
+    @ApiResponse(responseCode = "200", description = "Checked in",
+            content = @Content(schema = @Schema(example = """
+            {
+              "success": true,
+              "message": "Checked in successfully",
+              "checkInTime": "09:00:00",
+              "status": "PRESENT"
+            }
+            """)))
     public ResponseEntity<CheckInResponse> checkIn(
             @AuthenticationPrincipal AuthenticatedUser user,
             @RequestHeader(value = USER_ID_HEADER, required = false) String xUserId) {
@@ -53,8 +68,19 @@ public class AttendanceController {
     }
 
     @PostMapping("/checkout")
-    @Operation(summary = "Check out for today",
-            description = "Requires an existing check-in. Under 4 worked hours the status becomes HALF_DAY.")
+    @Operation(summary = "Check Out",
+            description = "Mark check-out. Working hours auto-calculated. Less than 4 hours = HALF_DAY.")
+    @SecurityRequirement(name = "Bearer Auth")
+    @ApiResponse(responseCode = "200", description = "Checked out",
+            content = @Content(schema = @Schema(example = """
+            {
+              "success": true,
+              "message": "Checked out successfully",
+              "checkOutTime": "18:00:00",
+              "workingHours": 9.0,
+              "status": "PRESENT"
+            }
+            """)))
     public ResponseEntity<CheckOutResponse> checkOut(
             @AuthenticationPrincipal AuthenticatedUser user,
             @RequestHeader(value = USER_ID_HEADER, required = false) String xUserId) {
@@ -63,7 +89,20 @@ public class AttendanceController {
     }
 
     @GetMapping("/today")
-    @Operation(summary = "Get the caller's attendance for today")
+    @Operation(summary = "Today's Attendance",
+            description = "Get today's check-in/check-out and working hours.")
+    @SecurityRequirement(name = "Bearer Auth")
+    @ApiResponse(responseCode = "200", description = "Today's record",
+            content = @Content(schema = @Schema(example = """
+            {
+              "date": "2026-09-01",
+              "checkIn": "09:00:00",
+              "checkOut": "18:00:00",
+              "workingHours": 9.0,
+              "status": "PRESENT",
+              "checkedIn": true
+            }
+            """)))
     public ResponseEntity<TodayAttendanceResponse> today(
             @RequestHeader(value = USER_ID_HEADER, required = false) String xUserId) {
         String userId = currentUserProvider.resolveTargetUserId(xUserId);
@@ -71,21 +110,43 @@ public class AttendanceController {
     }
 
     @GetMapping("/history")
-    @Operation(summary = "Get the caller's attendance records for a month")
+    @Operation(summary = "Attendance History",
+            description = "Monthly attendance records.")
+    @SecurityRequirement(name = "Bearer Auth")
+    @Parameter(name = "month", in = ParameterIn.QUERY, example = "9")
+    @Parameter(name = "year", in = ParameterIn.QUERY, example = "2026")
     public ResponseEntity<List<AttendanceResponse>> history(
             @RequestHeader(value = USER_ID_HEADER, required = false) String xUserId,
-            @Parameter(example = "8") @RequestParam int month,
-            @Parameter(example = "2026") @RequestParam int year) {
+            @RequestParam int month,
+            @RequestParam int year) {
         String userId = currentUserProvider.resolveTargetUserId(xUserId);
         return ResponseEntity.ok(attendanceService.getHistory(userId, month, year));
     }
 
     @GetMapping("/summary")
-    @Operation(summary = "Get the caller's monthly attendance summary")
+    @Operation(summary = "Monthly Summary",
+            description = "Total present, absent, late, half-day, working hours for the month.")
+    @SecurityRequirement(name = "Bearer Auth")
+    @Parameter(name = "month", in = ParameterIn.QUERY, example = "9")
+    @Parameter(name = "year", in = ParameterIn.QUERY, example = "2026")
+    @ApiResponse(responseCode = "200", description = "Monthly summary",
+            content = @Content(schema = @Schema(example = """
+            {
+              "month": 9,
+              "year": 2026,
+              "totalPresent": 20,
+              "totalAbsent": 2,
+              "totalLate": 3,
+              "totalHalfDay": 1,
+              "totalOnLeave": 1,
+              "totalWorkingHours": 176.5,
+              "averageHours": 8.4
+            }
+            """)))
     public ResponseEntity<AttendanceSummaryResponse> summary(
             @RequestHeader(value = USER_ID_HEADER, required = false) String xUserId,
-            @Parameter(example = "8") @RequestParam int month,
-            @Parameter(example = "2026") @RequestParam int year) {
+            @RequestParam int month,
+            @RequestParam int year) {
         String userId = currentUserProvider.resolveTargetUserId(xUserId);
         return ResponseEntity.ok(attendanceService.getSummary(userId, month, year));
     }

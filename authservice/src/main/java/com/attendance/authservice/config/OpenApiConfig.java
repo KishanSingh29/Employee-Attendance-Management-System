@@ -11,14 +11,17 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-    private static final String SECURITY_SCHEME = "bearerAuth";
+    private static final String SECURITY_SCHEME = "Bearer Auth";
 
     @Bean
     public OpenAPI authServiceOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
                         .title("Auth Service API")
-                        .description("Authentication & user management for the Employee Attendance Management System")
+                        .description("Employee authentication and registration. JWT with refresh tokens and logout "
+                                + "blacklisting. On register, Kafka event 'user-registered' published → "
+                                + "AttendanceService creates EmployeeProfile, LeaveService creates LeaveBalance "
+                                + "(PL:12, SL:6) automatically.")
                         .version("v1"))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME))
                 .components(new Components().addSecuritySchemes(SECURITY_SCHEME,

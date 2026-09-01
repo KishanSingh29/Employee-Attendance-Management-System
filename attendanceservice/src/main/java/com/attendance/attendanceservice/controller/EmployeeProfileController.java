@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/attendance/profiles")
-@SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Employee Profiles", description = "Local mirror of employee identity data owned by authservice")
+@SecurityRequirement(name = "Bearer Auth")
+@Tag(name = "Employee Profile", description = "Local mirror of employee identity data owned by authservice")
 public class EmployeeProfileController {
 
     private final EmployeeProfileService profileService;
@@ -31,15 +31,19 @@ public class EmployeeProfileController {
 
     @PostMapping
     @PreAuthorize("hasRole('HR')")
-    @Operation(summary = "Create or update an employee profile (HR only)",
-            description = "Called by HR or an authservice sync job to keep names / department in sync.")
+    @Tag(name = "Employee Profile")
+    @Operation(summary = "Sync Employee Profile",
+            description = "HR only. Manually sync employee profile from AuthService.")
+    @SecurityRequirement(name = "Bearer Auth")
     public ResponseEntity<EmployeeProfileResponse> sync(@Valid @RequestBody ProfileSyncRequest request) {
         return ResponseEntity.ok(profileService.sync(request));
     }
 
     @GetMapping("/me")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'HR')")
-    @Operation(summary = "Get the caller's profile as stored in this service")
+    @Operation(summary = "My Profile",
+            description = "Get logged in employee profile.")
+    @SecurityRequirement(name = "Bearer Auth")
     public ResponseEntity<EmployeeProfileResponse> myProfile(@AuthenticationPrincipal AuthenticatedUser user) {
         return ResponseEntity.ok(profileService.getByUserId(user.userId()));
     }
