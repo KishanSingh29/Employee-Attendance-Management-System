@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · AttendTrack</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="auth">
+  <div class="auth-brand">
+    <div class="auth-brand-top">
+      <div class="logo">A</div>
+      <div class="brand-name">AttendTrack</div>
+    </div>
+    <div class="auth-brand-mid">
+      <div class="auth-brand-headline">Attendance, leave and payroll days in one place.</div>
+      <p class="auth-brand-sub">Employees mark check-in and check-out, track paid and sick leave balances, and see exactly how unpaid days affect the month. HR approves requests and exports the monthly report.</p>
+      <div class="auth-stats">
+        <div><div class="auth-stat-num">248</div><div class="auth-stat-label">Employees</div></div>
+        <div><div class="auth-stat-num">5</div><div class="auth-stat-label">Departments</div></div>
+        <div><div class="auth-stat-num">99.2%</div><div class="auth-stat-label">Uptime</div></div>
+      </div>
+    </div>
+    <div class="auth-brand-foot">© 2026 AttendTrack · Internal HR platform</div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-card">
+      <div class="auth-title">Sign in</div>
+      <p class="auth-desc">Use your work email to access your attendance record.</p>
+
+      <div id="formError" class="alert alert-danger" style="margin-bottom:18px" hidden>
+        <div class="alert-icon">!</div>
+        <div id="formErrorText"></div>
+      </div>
+
+      <form id="loginForm" class="form-col" autocomplete="on">
+        <label class="field">
+          <span class="field-label">Email address</span>
+          <input class="input" type="email" name="email" id="email" placeholder="priya.menon@attendtrack.io" required>
+        </label>
+        <label class="field">
+          <span class="field-label">Password</span>
+          <input class="input" type="password" name="password" id="password" placeholder="••••••••" required>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Sign in</button>
+      </form>
+
+      <div class="demo-box">
+        <div class="demo-box-title">Getting started</div>
+        <div class="demo-box-list">
+          <div>Employees sign in with their work email</div>
+          <div>HR accounts unlock the review console</div>
+          <div>New here? Register first, then sign in</div>
+        </div>
+      </div>
+
+      <div class="auth-switch">Don't have an account? <a href="register.html">Register</a></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/utils.js"></script>
+<script>
+  // already signed in? go straight to the right dashboard
+  if (getToken()) {
+    window.location.href = getRole() === "HR" ? "hr-dashboard.html" : "employee-dashboard.html";
+  }
+
+  const form = document.getElementById("loginForm");
+  const errBox = document.getElementById("formError");
+  const errText = document.getElementById("formErrorText");
+
+  function showError(msg) {
+    errText.textContent = msg;
+    errBox.hidden = false;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errBox.hidden = true;
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!email) return showError("Enter your work email address.");
+    if (!email.includes("@") || !email.includes(".")) return showError("That email address does not look valid.");
+    if (password.length < 6) return showError("Password must be at least 6 characters.");
+
+    showLoading("loginBtn", "Signing in…");
+    try {
+      const data = await loginEmployee({ email, password });
+      if (!data || !data.accessToken) throw data || new Error("No token returned by the server.");
+      saveTokens(data);
+      // fill firstName / lastName / department for the user chip
+      try {
+        const profile = await getMyProfile();
+        saveProfile(profile);
+      } catch (e) { /* non-fatal — chip falls back to what login returned */ }
+      showToast("Welcome back, " + (getFirstName() || "") + "!", "success");
+      window.location.href = data.role === "HR" ? "hr-dashboard.html" : "employee-dashboard.html";
+    } catch (err) {
+      hideLoading("loginBtn", "Sign in");
+      showError(errMsg(err, "Sign in failed. Check your email and password."));
+    }
+  });
+</script>
+</body>
+</html>

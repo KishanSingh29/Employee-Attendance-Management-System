@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leave Management · AttendTrack</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">A</div>
+      <div class="brand-name">AttendTrack</div>
+    </div>
+    <div class="sidebar-role" id="roleLabel">HR Console</div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="dashboard" href="hr-dashboard.html"><span class="nav-dot"></span>Dashboard</a>
+      <a class="nav-item" data-nav="employees" href="hr-employees.html"><span class="nav-dot"></span>Employees</a>
+      <a class="nav-item" data-nav="leaves" href="hr-leaves.html"><span class="nav-dot"></span>Leave Management</a>
+      <a class="nav-item" data-nav="reports" href="hr-attendance-report.html"><span class="nav-dot"></span>Reports</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-row">
+        <div class="avatar" data-init>–</div>
+        <div class="sidebar-user-meta">
+          <div class="sidebar-user-name" data-user-name>–</div>
+          <div class="sidebar-user-id" data-user-id>–</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div class="topbar-title">
+        <div class="topbar-title-main" id="pageTitle">Leave Management</div>
+        <div class="topbar-title-sub" id="pageSub">Review, approve and reject requests</div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-chip-avatar" data-init>–</div>
+          <div>
+            <div class="user-chip-name" data-user-name>–</div>
+            <div class="user-chip-meta" id="tbMeta">–</div>
+          </div>
+        </div>
+        <button class="btn-logout" id="logoutBtn">Logout</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="filter-bar">
+        <div class="field-label">Filter</div>
+        <div class="tabs" id="tabs">
+          <div class="tab active" data-status="">All <span class="num" data-count="">0</span></div>
+          <div class="tab" data-status="PENDING">Pending <span class="num" data-count="PENDING">0</span></div>
+          <div class="tab" data-status="APPROVED">Approved <span class="num" data-count="APPROVED">0</span></div>
+          <div class="tab" data-status="REJECTED">Rejected <span class="num" data-count="REJECTED">0</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Employee</th><th>Type</th><th>Dates</th><th>Days</th><th>Reason</th><th>Status</th><th class="right">Actions</th>
+            </tr></thead>
+            <tbody id="leaveBody">
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:34px 20px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="emptyBox" hidden></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="rejectModal" class="modal" hidden>
+  <div class="modal-card">
+    <div class="modal-title">Reject leave request</div>
+    <div class="modal-sub" id="rejectMeta">—</div>
+    <label class="field" style="margin-top:18px">
+      <span class="field-label sm">Reason for rejection</span>
+      <textarea class="textarea" id="rejectReason" rows="3" placeholder="Shared with the employee"></textarea>
+    </label>
+    <div id="rejectError" style="font:500 12.5px var(--sans);color:var(--red-dark);margin-top:9px" hidden></div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-outline" id="rejectCancel">Cancel</button>
+      <button class="btn btn-sm btn-red" id="rejectConfirm">Reject request</button>
+    </div>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="overlay-inner"><div class="overlay-spin"></div><div class="overlay-label">Working…</div></div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/utils.js"></script>
+<script>
+  checkAuth();
+  checkHR();
+  initShell("leaves", "Leave Management", "Review, approve and reject requests");
+
+  let currentStatus = "";
+  let rows = [];
+
+  function normalize(l) {
+    const start = pick(l, ["startDate", "start", "fromDate"]);
+    const end = pick(l, ["endDate", "end", "toDate"]);
+    return {
+      id: pick(l, ["id", "leaveId", "requestId"]),
+      name: pick(l, ["employeeName", "name"], "-"),
+      empId: pick(l, ["employeeId", "empId"], "-"),
+      dept: pick(l, ["department", "dept"], "-"),
+      type: pick(l, ["leaveType", "type"], "-"),
+      start, end,
+      days: pick(l, ["days", "numberOfDays", "totalDays"], dayCount(start, end)),
+      reason: pick(l, ["reason"], "-"),
+      rejectReason: pick(l, ["rejectionReason", "rejectReason"], ""),
+      status: pick(l, ["status"], "PENDING")
+    };
+  }
+
+  function updateCounts() {
+    const counts = { "": rows.length, PENDING: 0, APPROVED: 0, REJECTED: 0 };
+    rows.forEach(r => { if (counts[r.status] !== undefined) counts[r.status]++; });
+    document.querySelectorAll("[data-count]").forEach(el => {
+      el.textContent = counts[el.dataset.count] ?? 0;
+    });
+  }
+
+  function render() {
+    const filtered = currentStatus ? rows.filter(r => r.status === currentStatus) : rows;
+    const body = document.getElementById("leaveBody");
+    const emptyBox = document.getElementById("emptyBox");
+    if (filtered.length === 0) {
+      body.innerHTML = "";
+      emptyBox.hidden = false;
+      emptyBox.innerHTML = emptyState("No requests in this view", "Switch the filter to see other statuses.");
+      return;
+    }
+    emptyBox.hidden = true;
+    body.innerHTML = filtered.map(r => {
+      const act = r.status === "PENDING";
+      const reason = r.status === "REJECTED" && r.rejectReason
+        ? `${r.reason} — rejected: ${r.rejectReason}` : r.reason;
+      return `<tr>
+        <td>
+          <div class="cell-user-name">${escapeHtml(r.name)}</div>
+          <div class="cell-user-mail">${escapeHtml(r.empId)} · ${escapeHtml(r.dept)}</div>
+        </td>
+        <td class="mono">${escapeHtml(r.type)}</td>
+        <td>${formatRange(r.start, r.end)}</td>
+        <td class="mono">${r.days}</td>
+        <td class="wrap">${escapeHtml(reason)}</td>
+        <td>${getStatusBadge(r.status)}</td>
+        <td class="right">
+          <span class="flex gap-10" style="justify-content:flex-end">
+            <button class="btn btn-xs btn-green" data-approve="${r.id}" ${act ? "" : "disabled"}>Approve</button>
+            <button class="btn btn-xs btn-red" data-reject="${r.id}" ${act ? "" : "disabled"}>Reject</button>
+          </span>
+        </td>
+      </tr>`;
+    }).join("");
+
+    body.querySelectorAll("[data-approve]:not([disabled])").forEach(b =>
+      b.addEventListener("click", () => doApprove(b.dataset.approve)));
+    body.querySelectorAll("[data-reject]:not([disabled])").forEach(b =>
+      b.addEventListener("click", () => openReject(b.dataset.reject)));
+  }
+
+  async function doApprove(id) {
+    setOverlay(true, "Approving…");
+    try {
+      await hrApproveLeave(id);
+      showToast("Leave approved.", "success");
+      await load();
+    } catch (err) {
+      showToast(errMsg(err, "Could not approve the request."), "danger");
+    } finally { setOverlay(false); }
+  }
+
+  const rejectModal = document.getElementById("rejectModal");
+  let rejectId = null;
+  function openReject(id) {
+    rejectId = id;
+    const r = rows.find(x => String(x.id) === String(id)) || {};
+    document.getElementById("rejectMeta").textContent =
+      `${r.name} · ${r.type} · ${formatRange(r.start, r.end)}`;
+    document.getElementById("rejectReason").value = "";
+    document.getElementById("rejectError").hidden = true;
+    rejectModal.hidden = false;
+  }
+  document.getElementById("rejectCancel").addEventListener("click", () => rejectModal.hidden = true);
+  rejectModal.addEventListener("click", e => { if (e.target === rejectModal) rejectModal.hidden = true; });
+  document.getElementById("rejectConfirm").addEventListener("click", async () => {
+    const reason = document.getElementById("rejectReason").value.trim();
+    const errEl = document.getElementById("rejectError");
+    if (reason.length < 5) {
+      errEl.textContent = "Give the employee a reason (at least 5 characters).";
+      errEl.hidden = false;
+      return;
+    }
+    setOverlay(true, "Rejecting…");
+    try {
+      await hrRejectLeave(rejectId, reason);
+      rejectModal.hidden = true;
+      showToast("Leave rejected. The employee has been notified.", "danger");
+      await load();
+    } catch (err) {
+      errEl.textContent = errMsg(err, "Could not reject the request.");
+      errEl.hidden = false;
+    } finally { setOverlay(false); }
+  });
+
+  document.querySelectorAll("#tabs .tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll("#tabs .tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      currentStatus = tab.dataset.status;
+      render();
+    });
+  });
+
+  async function load() {
+    try {
+      const list = await hrGetAllLeaves("");
+      const arr = Array.isArray(list) ? list : pick(list, ["requests", "content", "data"], []);
+      rows = arr.map(normalize);
+      updateCounts();
+      render();
+    } catch (err) {
+      document.getElementById("leaveBody").innerHTML = errorRow(7, errMsg(err, "Could not load leave requests."));
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

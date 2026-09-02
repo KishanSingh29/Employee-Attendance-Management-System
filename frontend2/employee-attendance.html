@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Attendance History · AttendTrack</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">A</div>
+      <div class="brand-name">AttendTrack</div>
+    </div>
+    <div class="sidebar-role" id="roleLabel">Employee</div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="dashboard" href="employee-dashboard.html"><span class="nav-dot"></span>Dashboard</a>
+      <a class="nav-item" data-nav="attendance" href="employee-attendance.html"><span class="nav-dot"></span>Attendance History</a>
+      <a class="nav-item" data-nav="leaves" href="employee-leaves.html"><span class="nav-dot"></span>Leave Management</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-row">
+        <div class="avatar" data-init>–</div>
+        <div class="sidebar-user-meta">
+          <div class="sidebar-user-name" data-user-name>–</div>
+          <div class="sidebar-user-id" data-user-id>–</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div class="topbar-title">
+        <div class="topbar-title-main" id="pageTitle">Attendance History</div>
+        <div class="topbar-title-sub" id="pageSub">Daily record and monthly totals</div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-chip-avatar" data-init>–</div>
+          <div>
+            <div class="user-chip-name" data-user-name>–</div>
+            <div class="user-chip-meta" id="tbMeta">–</div>
+          </div>
+        </div>
+        <button class="btn-logout" id="logoutBtn">Logout</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="filter-bar">
+        <div class="field-label">Period</div>
+        <select id="month"></select>
+        <select id="year"></select>
+        <button class="btn btn-primary btn-sm" id="applyBtn" style="padding:9px 16px">Apply</button>
+        <div class="view-toggle filter-spacer" id="viewToggle">
+          <button type="button" data-view="calendar" class="active">📅 Calendar</button>
+          <button type="button" data-view="table">📋 Table</button>
+        </div>
+      </div>
+
+      <div class="grid grid-auto-190">
+        <div class="stat top-green"><div class="section-label">Total present</div><div class="stat-value" id="sPresent">–</div></div>
+        <div class="stat top-red"><div class="section-label">Total absent</div><div class="stat-value" id="sAbsent">–</div></div>
+        <div class="stat top-amber"><div class="section-label">Total late</div><div class="stat-value" id="sLate">–</div></div>
+        <div class="stat top-blue"><div class="section-label">Working hours</div><div class="stat-value" id="sHours">–</div></div>
+      </div>
+
+      <!-- CALENDAR VIEW (default) -->
+      <div class="card card-pad" id="calendarView">
+        <div class="between" style="flex-wrap:wrap;gap:14px">
+          <div class="card-title" id="calPeriodLabel">Month</div>
+          <div class="cal-legend2">
+            <span><i style="background:#16a34a"></i>Present</span>
+            <span><i style="background:#d97706"></i>Late</span>
+            <span><i style="background:#ea580c"></i>Half day</span>
+            <span><i style="background:#2563eb"></i>On leave</span>
+            <span><i style="background:#dc2626"></i>Absent</span>
+          </div>
+        </div>
+        <div class="calendar-grid" id="calGrid" style="margin-top:18px"></div>
+      </div>
+
+      <!-- TABLE VIEW -->
+      <div class="card" id="tableView" hidden>
+        <div class="card-head">
+          <div class="card-title" id="periodLabel">Daily record</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Date</th><th>Day</th><th>Check-in</th><th>Check-out</th><th>Hours</th><th>Status</th>
+            </tr></thead>
+            <tbody id="tableBody">
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:34px 20px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="emptyBox" hidden></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="overlay-inner"><div class="overlay-spin"></div><div class="overlay-label">Working…</div></div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/utils.js"></script>
+<script>
+  checkAuth();
+  initShell("attendance", "Attendance History", "Daily record and monthly totals");
+
+  const monthSel = document.getElementById("month");
+  const yearSel = document.getElementById("year");
+  monthSel.innerHTML = monthOptions(getCurrentMonth());
+  yearSel.innerHTML = yearOptions(getCurrentYear());
+
+  function renderSummary(s) {
+    const present = num(pick(s, ["totalPresent", "present", "presentDays", "presentCount"], 0));
+    const absent = num(pick(s, ["totalAbsent", "absent", "absentDays", "absentCount"], 0));
+    const late = num(pick(s, ["totalLate", "late", "lateDays", "lateCount"], 0));
+    const hours = pick(s, ["totalWorkingHours", "workingHours", "totalHours", "hours"], 0);
+    document.getElementById("sPresent").textContent = present;
+    document.getElementById("sAbsent").textContent = absent;
+    document.getElementById("sLate").textContent = late;
+    document.getElementById("sHours").textContent = formatHours(hours);
+  }
+
+  function renderTable(rows) {
+    const body = document.getElementById("tableBody");
+    const emptyBox = document.getElementById("emptyBox");
+    if (!Array.isArray(rows) || rows.length === 0) {
+      body.innerHTML = "";
+      emptyBox.hidden = false;
+      emptyBox.innerHTML = emptyState("No records for this period", "Attendance appears here once the month begins.");
+      return;
+    }
+    emptyBox.hidden = true;
+    body.innerHTML = rows.map(r => {
+      const d = pick(r, ["date", "attendanceDate"]);
+      const inT = pick(r, ["checkIn", "checkInTime", "inTime"]);
+      const outT = pick(r, ["checkOut", "checkOutTime", "outTime"]);
+      return `<tr>
+        <td class="strong">${formatDateLong(d)}</td>
+        <td>${dayName(d)}</td>
+        <td class="mono">${formatTime(inT)}</td>
+        <td class="mono">${formatTime(outT)}</td>
+        <td class="mono">${formatHours(pick(r, ["workingHours", "workHours", "totalHours", "hours"]))}</td>
+        <td>${getStatusBadge(pick(r, ["status"], "PRESENT"))}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  // status -> calendar cell colours (matches AttendTrack.dc.html palette)
+  const CAL_STYLE = {
+    PRESENT:  { bg: "#dcfce7", fg: "#15803d", label: "Present" },
+    ABSENT:   { bg: "#fee2e2", fg: "#b91c1c", label: "Absent" },
+    LATE:     { bg: "#fef3c7", fg: "#b45309", label: "Late" },
+    HALF_DAY: { bg: "#ffedd5", fg: "#c2410c", label: "Half Day" },
+    ON_LEAVE: { bg: "#dbeafe", fg: "#1d4ed8", label: "On Leave" }
+  };
+
+  function renderCalendar(rows, m, y) {
+    const grid = document.getElementById("calGrid");
+    document.getElementById("calPeriodLabel").textContent = `${monthName(m)} ${y}`;
+
+    // index rows by day-of-month
+    const byDay = {};
+    (Array.isArray(rows) ? rows : []).forEach(r => {
+      const ds = pick(r, ["date", "attendanceDate"]);
+      if (!ds) return;
+      const dt = new Date(ds);
+      if (!isNaN(dt)) byDay[dt.getDate()] = r;
+    });
+
+    const daysInMonth = new Date(y, m, 0).getDate();
+    const firstDow = new Date(y, m - 1, 1).getDay();      // 0 = Sun
+    const lead = (firstDow + 6) % 7;                       // Monday-based offset
+    const today = new Date();
+    const isCurrentMonth = (today.getFullYear() === y && today.getMonth() + 1 === m);
+
+    let cells = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+      .map(h => `<div class="calendar-header">${h}</div>`);
+
+    for (let i = 0; i < lead; i++) cells.push(`<div class="calendar-day empty"></div>`);
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dow = new Date(y, m - 1, d).getDay();
+      const weekend = dow === 0 || dow === 6;
+      const future = isCurrentMonth && d > today.getDate();
+      const row = byDay[d];
+      const status = row ? pick(row, ["status"], null) : null;
+
+      let bg = "#f8fafc", fg = "#94a3b8", labelHtml = "", timeHtml = "";
+
+      if (weekend) {
+        labelHtml = `<div class="cd-status" style="color:#94a3b8">—</div>`;
+      } else if (future || !status) {
+        bg = "#f8fafc"; fg = "#94a3b8";
+      } else {
+        const st = CAL_STYLE[status] || { bg: "#f1f5f9", fg: "#475569", label: String(status).replace("_", " ") };
+        bg = st.bg; fg = st.fg;
+        labelHtml = `<div class="cd-status" style="color:${st.fg}">${st.label}</div>`;
+        if (status === "PRESENT") {
+          const inT = pick(row, ["checkIn", "checkInTime", "inTime"]);
+          if (inT) timeHtml = `<div class="cd-time" style="color:${st.fg}">${formatTime(inT)}</div>`;
+        }
+      }
+
+      cells.push(`<div class="calendar-day" style="background:${bg}">
+        <div class="cd-num" style="color:${fg}">${d}</div>
+        ${labelHtml}${timeHtml}
+      </div>`);
+    }
+    grid.innerHTML = cells.join("");
+  }
+
+  let lastRows = [];
+
+  function setView(view) {
+    const isCal = view === "calendar";
+    document.getElementById("calendarView").hidden = !isCal;
+    document.getElementById("tableView").hidden = isCal;
+    document.querySelectorAll("#viewToggle button").forEach(b =>
+      b.classList.toggle("active", b.dataset.view === view));
+  }
+
+  document.querySelectorAll("#viewToggle button").forEach(b =>
+    b.addEventListener("click", () => setView(b.dataset.view)));
+
+  async function load() {
+    const m = num(monthSel.value), y = num(yearSel.value);
+    document.getElementById("periodLabel").textContent = `${monthName(m)} ${y} · daily record`;
+    setOverlay(true, "Loading attendance…");
+    try {
+      const s = await getAttendanceSummary(m, y);
+      renderSummary(s || {});
+    } catch (err) {
+      renderSummary({});
+      showToast(errMsg(err, "Could not load summary."), "danger");
+    }
+    try {
+      const hist = await getAttendanceHistory(m, y);
+      lastRows = Array.isArray(hist) ? hist : pick(hist, ["records", "content", "data"], []);
+      renderTable(lastRows);
+      renderCalendar(lastRows, m, y);
+    } catch (err) {
+      lastRows = [];
+      document.getElementById("tableBody").innerHTML = errorRow(6, errMsg(err, "Could not load attendance history."));
+      renderCalendar([], m, y);
+    } finally {
+      setOverlay(false);
+    }
+  }
+
+  document.getElementById("applyBtn").addEventListener("click", load);
+  monthSel.addEventListener("change", load);
+  yearSel.addEventListener("change", load);
+  setView("calendar");   // default
+  load();
+</script>
+</body>
+</html>

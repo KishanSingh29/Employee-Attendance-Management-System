@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard · AttendTrack</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">A</div>
+      <div class="brand-name">AttendTrack</div>
+    </div>
+    <div class="sidebar-role" id="roleLabel">Employee</div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="dashboard" href="employee-dashboard.html"><span class="nav-dot"></span>Dashboard</a>
+      <a class="nav-item" data-nav="attendance" href="employee-attendance.html"><span class="nav-dot"></span>Attendance History</a>
+      <a class="nav-item" data-nav="leaves" href="employee-leaves.html"><span class="nav-dot"></span>Leave Management</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-row">
+        <div class="avatar" data-init>–</div>
+        <div class="sidebar-user-meta">
+          <div class="sidebar-user-name" data-user-name>–</div>
+          <div class="sidebar-user-id" data-user-id>–</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div class="topbar-title">
+        <div class="topbar-title-main" id="pageTitle">Dashboard</div>
+        <div class="topbar-title-sub" id="pageSub">Your attendance and leave at a glance</div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-chip-avatar" data-init>–</div>
+          <div>
+            <div class="user-chip-name" data-user-name>–</div>
+            <div class="user-chip-meta" id="tbMeta">–</div>
+          </div>
+        </div>
+        <button class="btn-logout" id="logoutBtn">Logout</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="grid grid-auto-300">
+        <div class="card-dark">
+          <div>
+            <div class="muted" id="todayLong">—</div>
+            <h3 id="greeting">Hello</h3>
+          </div>
+          <div class="foot">Standard shift 09:00 to 18:00 · grace until 09:30.</div>
+        </div>
+
+        <div class="card card-pad" style="display:flex;flex-direction:column;gap:16px;min-height:150px">
+          <div class="between">
+            <div class="section-label">Today's status</div>
+            <span id="todayBadge" class="badge bg-secondary">NOT MARKED</span>
+          </div>
+          <div id="todayNote" style="font:400 13px/1.5 var(--sans);color:var(--text-3)">Loading today's record…</div>
+          <div class="flex gap-10 mt-auto" style="flex-wrap:wrap">
+            <button class="check-btn in" id="checkInBtn" disabled>Check In</button>
+            <button class="check-btn out" id="checkOutBtn" disabled>Check Out</button>
+          </div>
+        </div>
+
+        <div class="card card-pad" style="min-height:150px">
+          <div class="section-label">Today's timesheet</div>
+          <div class="ts-grid">
+            <div><div class="ts-num" id="tsIn">—</div><div class="ts-label">Check-in</div></div>
+            <div><div class="ts-num" id="tsOut">—</div><div class="ts-label">Check-out</div></div>
+            <div><div class="ts-num blue" id="tsHours">—</div><div class="ts-label">Worked</div></div>
+          </div>
+          <div class="ts-foot">Standard shift 09:00 — 18:00 · grace until 09:30</div>
+        </div>
+      </div>
+
+      <div class="grid grid-auto-230">
+        <div class="card card-pad">
+          <div class="bal-head">
+            <div class="bal-name">Paid leave remaining</div>
+            <div class="bal-meta" id="plMeta">–/– used</div>
+          </div>
+          <div class="bal-value green" id="plLeft">–<span class="unit"> days</span></div>
+          <div class="progress"><span class="green" id="plBar" style="width:0%"></span></div>
+        </div>
+        <div class="card card-pad">
+          <div class="bal-head">
+            <div class="bal-name">Sick leave remaining</div>
+            <div class="bal-meta" id="slMeta">–/– used</div>
+          </div>
+          <div class="bal-value blue" id="slLeft">–<span class="unit"> days</span></div>
+          <div class="progress"><span class="blue" id="slBar" style="width:0%"></span></div>
+        </div>
+        <div class="card card-pad">
+          <div class="bal-head">
+            <div class="bal-name">Unpaid days used</div>
+            <div class="bal-meta">this year</div>
+          </div>
+          <div class="bal-value amber" id="unpaidUsed">–<span class="unit"> days</span></div>
+          <div class="bal-note" id="deductNote">Deduction so far —</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Recent attendance</div>
+          <a class="link-strong" href="employee-attendance.html">View all</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Date</th><th>In</th><th>Out</th><th>Hours</th><th>Status</th>
+            </tr></thead>
+            <tbody id="recentBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:34px 20px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="recentEmpty" hidden></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="overlay-inner">
+    <div class="overlay-spin"></div>
+    <div class="overlay-label">Working…</div>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/utils.js"></script>
+<script>
+  checkAuth();
+  initShell("dashboard", "Dashboard", "Your attendance and leave at a glance");
+
+  const now = new Date();
+  document.getElementById("todayLong").textContent =
+    now.toLocaleDateString("en-IN", { weekday: "long", day: "2-digit", month: "short", year: "numeric" });
+  const hh = now.getHours();
+  document.getElementById("greeting").textContent =
+    (hh < 12 ? "Good morning" : hh < 17 ? "Good afternoon" : "Good evening") + ", " + (getFirstName() || "");
+
+  let todayRecord = null;
+
+  function renderToday(t) {
+    todayRecord = t;
+    const inT = pick(t, ["checkIn", "checkInTime", "inTime"]);
+    const outT = pick(t, ["checkOut", "checkOutTime", "outTime"]);
+    const status = pick(t, ["status"], t ? "PRESENT" : "NOT_MARKED");
+    const hours = pick(t, ["workingHours", "workHours", "totalHours", "hours"]);
+
+    document.getElementById("tsIn").textContent = formatTime(inT);
+    document.getElementById("tsOut").textContent = formatTime(outT);
+    document.getElementById("tsHours").textContent = (outT && inT) ? formatHours(hours) : "—";
+
+    const badge = document.getElementById("todayBadge");
+    badge.outerHTML = getStatusBadge(status).replace("<span ", '<span id="todayBadge" ');
+
+    const note = document.getElementById("todayNote");
+    const checkInBtn = document.getElementById("checkInBtn");
+    const checkOutBtn = document.getElementById("checkOutBtn");
+
+    if (!t || !inT) {
+      note.textContent = "You have not checked in yet. Check in before 09:30 to avoid a late mark.";
+      checkInBtn.disabled = false;
+      checkOutBtn.disabled = true;
+    } else if (!outT) {
+      note.textContent = "Checked in at " + formatTime(inT) + ". Check out when you finish for the day.";
+      checkInBtn.disabled = true;
+      checkOutBtn.disabled = false;
+    } else {
+      note.textContent = "Day closed at " + formatTime(outT) + ". Nothing else to do today.";
+      checkInBtn.disabled = true;
+      checkOutBtn.disabled = true;
+    }
+  }
+
+  function renderBalance(b) {
+    const plTotal = num(pick(b, ["paidLeaveTotal", "plTotal", "totalPaidLeave"], 12));
+    const plUsed = num(pick(b, ["paidLeaveUsed", "plUsed", "usedPaidLeave"], 0));
+    const plLeft = num(pick(b, ["paidLeaveRemaining", "paidLeaveBalance", "plRemaining", "plLeft"], plTotal - plUsed));
+    const slTotal = num(pick(b, ["sickLeaveTotal", "slTotal", "totalSickLeave"], 8));
+    const slUsed = num(pick(b, ["sickLeaveUsed", "slUsed", "usedSickLeave"], 0));
+    const slLeft = num(pick(b, ["sickLeaveRemaining", "sickLeaveBalance", "slRemaining", "slLeft"], slTotal - slUsed));
+    const unpaid = num(pick(b, ["unpaidLeaveUsed", "unpaidDays", "unpaidUsed"], 0));
+
+    document.getElementById("plMeta").textContent = `${plUsed}/${plTotal} used`;
+    document.getElementById("plLeft").innerHTML = `${plLeft}<span class="unit"> days</span>`;
+    document.getElementById("plBar").style.width = (plTotal ? Math.min(100, plUsed / plTotal * 100) : 0) + "%";
+
+    document.getElementById("slMeta").textContent = `${slUsed}/${slTotal} used`;
+    document.getElementById("slLeft").innerHTML = `${slLeft}<span class="unit"> days</span>`;
+    document.getElementById("slBar").style.width = (slTotal ? Math.min(100, slUsed / slTotal * 100) : 0) + "%";
+
+    document.getElementById("unpaidUsed").innerHTML = `${unpaid}<span class="unit"> days</span>`;
+  }
+
+  function renderRecent(rows) {
+    const body = document.getElementById("recentBody");
+    const emptyBox = document.getElementById("recentEmpty");
+    if (!Array.isArray(rows) || rows.length === 0) {
+      body.innerHTML = "";
+      emptyBox.hidden = false;
+      emptyBox.innerHTML = emptyState("No attendance yet", "Your check-ins will appear here.");
+      return;
+    }
+    emptyBox.hidden = true;
+    body.innerHTML = rows.slice(0, 5).map(r => {
+      const inT = pick(r, ["checkIn", "checkInTime", "inTime"]);
+      const outT = pick(r, ["checkOut", "checkOutTime", "outTime"]);
+      return `<tr>
+        <td class="strong">${formatDateLong(pick(r, ["date", "attendanceDate"]))}</td>
+        <td class="mono">${formatTime(inT)}</td>
+        <td class="mono">${formatTime(outT)}</td>
+        <td class="mono">${formatHours(pick(r, ["workingHours", "workHours", "totalHours", "hours"]))}</td>
+        <td>${getStatusBadge(pick(r, ["status"], "PRESENT"))}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  async function load() {
+    try {
+      const t = await getTodayAttendance();
+      renderToday(t && Object.keys(t).length ? t : null);
+    } catch (err) {
+      renderToday(null);
+      if (!/not found|404/i.test(errMsg(err))) showToast(errMsg(err, "Could not load today's status."), "danger");
+    }
+    try {
+      renderBalance(await getLeaveBalance(getCurrentYear()));
+    } catch (err) {
+      showToast(errMsg(err, "Could not load leave balance."), "danger");
+    }
+    try {
+      const hist = await getAttendanceHistory(getCurrentMonth(), getCurrentYear());
+      renderRecent(Array.isArray(hist) ? hist : pick(hist, ["records", "content", "data"], []));
+    } catch (err) {
+      document.getElementById("recentBody").innerHTML = errorRow(5, errMsg(err, "Could not load attendance history."));
+    }
+  }
+
+  document.getElementById("checkInBtn").addEventListener("click", async () => {
+    setOverlay(true, "Recording check-in…");
+    try {
+      await checkIn();
+      showToast("Checked in successfully.", "success");
+      renderToday(await getTodayAttendance());
+      const hist = await getAttendanceHistory(getCurrentMonth(), getCurrentYear());
+      renderRecent(Array.isArray(hist) ? hist : pick(hist, ["records", "content", "data"], []));
+    } catch (err) {
+      showToast(errMsg(err, "Check-in failed."), "danger");
+    } finally { setOverlay(false); }
+  });
+
+  document.getElementById("checkOutBtn").addEventListener("click", async () => {
+    setOverlay(true, "Recording check-out…");
+    try {
+      await checkOut();
+      showToast("Checked out. Have a good evening.", "success");
+      renderToday(await getTodayAttendance());
+      const hist = await getAttendanceHistory(getCurrentMonth(), getCurrentYear());
+      renderRecent(Array.isArray(hist) ? hist : pick(hist, ["records", "content", "data"], []));
+    } catch (err) {
+      showToast(errMsg(err, "Check-out failed."), "danger");
+    } finally { setOverlay(false); }
+  });
+
+  load();
+</script>
+</body>
+</html>

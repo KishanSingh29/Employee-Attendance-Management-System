@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reports · AttendTrack</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">A</div>
+      <div class="brand-name">AttendTrack</div>
+    </div>
+    <div class="sidebar-role" id="roleLabel">HR Console</div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="dashboard" href="hr-dashboard.html"><span class="nav-dot"></span>Dashboard</a>
+      <a class="nav-item" data-nav="employees" href="hr-employees.html"><span class="nav-dot"></span>Employees</a>
+      <a class="nav-item" data-nav="leaves" href="hr-leaves.html"><span class="nav-dot"></span>Leave Management</a>
+      <a class="nav-item" data-nav="reports" href="hr-attendance-report.html"><span class="nav-dot"></span>Reports</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-row">
+        <div class="avatar" data-init>–</div>
+        <div class="sidebar-user-meta">
+          <div class="sidebar-user-name" data-user-name>–</div>
+          <div class="sidebar-user-id" data-user-id>–</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div class="topbar-title">
+        <div class="topbar-title-main" id="pageTitle">Reports</div>
+        <div class="topbar-title-sub" id="pageSub">Monthly attendance report and CSV export</div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-chip-avatar" data-init>–</div>
+          <div>
+            <div class="user-chip-name" data-user-name>–</div>
+            <div class="user-chip-meta" id="tbMeta">–</div>
+          </div>
+        </div>
+        <button class="btn-logout" id="logoutBtn">Logout</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="filter-bar">
+        <div class="field-label">Report period</div>
+        <select id="month"></select>
+        <select id="year"></select>
+        <select id="dept">
+          <option value="ALL">All departments</option>
+          <option value="IT">IT</option>
+          <option value="HR">HR</option>
+          <option value="Sales">Sales</option>
+          <option value="Finance">Finance</option>
+          <option value="Operations">Operations</option>
+        </select>
+        <button class="btn btn-dark btn-sm filter-spacer" id="exportBtn" style="padding:10px 17px">Export CSV</button>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Monthly attendance report</div>
+            <div class="card-sub" id="reportSub">—</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Employee</th><th>Dept</th>
+              <th class="right">Present</th><th class="right">Absent</th><th class="right">Late</th>
+              <th class="right">Half day</th><th class="right">On leave</th><th class="right">Working hours</th>
+            </tr></thead>
+            <tbody id="reportBody">
+              <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:34px 20px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="emptyBox" hidden></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="overlay-inner"><div class="overlay-spin"></div><div class="overlay-label">Working…</div></div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/utils.js"></script>
+<script>
+  checkAuth();
+  checkHR();
+  initShell("reports", "Reports", "Monthly attendance report and CSV export");
+
+  const monthSel = document.getElementById("month");
+  const yearSel = document.getElementById("year");
+  const deptSel = document.getElementById("dept");
+  monthSel.innerHTML = monthOptions(getCurrentMonth());
+  yearSel.innerHTML = yearOptions(getCurrentYear());
+
+  let reportRows = [];
+
+  function normalize(r) {
+    const first = pick(r, ["firstName"], "");
+    const last = pick(r, ["lastName"], "");
+    return {
+      id: pick(r, ["employeeId", "empId", "id"], "-"),
+      name: pick(r, ["employeeName", "name", "fullName"], (first + " " + last).trim() || "-"),
+      dept: pick(r, ["department", "dept"], "-"),
+      present: num(pick(r, ["present", "presentDays", "totalPresent"], 0)),
+      absent: num(pick(r, ["absent", "absentDays", "totalAbsent"], 0)),
+      late: num(pick(r, ["late", "lateDays", "totalLate"], 0)),
+      half: num(pick(r, ["halfDay", "halfDays", "halfDayCount", "totalHalfDay"], 0)),
+      leave: num(pick(r, ["onLeave", "leaveDays", "onLeaveDays", "totalOnLeave"], 0)),
+      hours: pick(r, ["workingHours", "totalWorkingHours", "totalHours", "hours"], 0)
+    };
+  }
+
+  function render() {
+    const dept = deptSel.value;
+    const rows = dept === "ALL" ? reportRows : reportRows.filter(r => r.dept === dept);
+    document.getElementById("reportSub").textContent =
+      `${monthName(monthSel.value)} ${yearSel.value} · ${rows.length} employees`;
+
+    const body = document.getElementById("reportBody");
+    const emptyBox = document.getElementById("emptyBox");
+    if (rows.length === 0) {
+      body.innerHTML = "";
+      emptyBox.hidden = false;
+      emptyBox.innerHTML = emptyState("No report data", "No attendance recorded for this period.");
+      return;
+    }
+    emptyBox.hidden = true;
+    body.innerHTML = rows.map(r => `<tr>
+      <td>
+        <div class="cell-user-name">${escapeHtml(r.name)}</div>
+        <div class="cell-user-mail">${escapeHtml(r.id)}</div>
+      </td>
+      <td>${escapeHtml(r.dept)}</td>
+      <td class="mono right" style="color:var(--green-dark)">${r.present}</td>
+      <td class="mono right" style="color:var(--red-dark)">${r.absent}</td>
+      <td class="mono right" style="color:var(--amber-dark)">${r.late}</td>
+      <td class="mono right" style="color:#c2410c">${r.half}</td>
+      <td class="mono right" style="color:#1d4ed8">${r.leave}</td>
+      <td class="mono right" style="color:var(--darker);font-weight:600">${formatHours(r.hours)}</td>
+    </tr>`).join("");
+  }
+
+  function exportCsv() {
+    const dept = deptSel.value;
+    const rows = dept === "ALL" ? reportRows : reportRows.filter(r => r.dept === dept);
+    if (rows.length === 0) return showToast("Nothing to export for this period.", "warning");
+    const lines = ["Employee ID,Name,Department,Present,Absent,Late,Half Day,On Leave,Working Hours"];
+    rows.forEach(r => lines.push(
+      [r.id, `"${r.name}"`, r.dept, r.present, r.absent, r.late, r.half, r.leave, `"${formatHours(r.hours)}"`].join(",")
+    ));
+    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `attendance-${yearSel.value}-${String(monthSel.value).padStart(2, "0")}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+    showToast(`${rows.length} rows exported to ${a.download}.`, "success");
+  }
+
+  async function load() {
+    setOverlay(true, "Building report…");
+    document.getElementById("reportBody").innerHTML =
+      `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:34px 20px">Loading…</td></tr>`;
+    try {
+      const data = await hrGetReport(num(monthSel.value), num(yearSel.value));
+      const arr = Array.isArray(data) ? data : pick(data, ["report", "rows", "content", "data"], []);
+      reportRows = arr.map(normalize);
+      render();
+    } catch (err) {
+      document.getElementById("reportBody").innerHTML = errorRow(8, errMsg(err, "Could not load the report."));
+    } finally {
+      setOverlay(false);
+    }
+  }
+
+  monthSel.addEventListener("change", load);
+  yearSel.addEventListener("change", load);
+  deptSel.addEventListener("change", render);
+  document.getElementById("exportBtn").addEventListener("click", exportCsv);
+  load();
+</script>
+</body>
+</html>

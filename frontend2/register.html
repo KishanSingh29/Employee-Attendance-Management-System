@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create account · AttendTrack</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="auth">
+  <div class="auth-brand">
+    <div class="auth-brand-top">
+      <div class="logo">A</div>
+      <div class="brand-name">AttendTrack</div>
+    </div>
+    <div class="auth-brand-mid">
+      <div class="auth-brand-headline">Attendance, leave and payroll days in one place.</div>
+      <p class="auth-brand-sub">Employees mark check-in and check-out, track paid and sick leave balances, and see exactly how unpaid days affect the month. HR approves requests and exports the monthly report.</p>
+      <div class="auth-stats">
+        <div><div class="auth-stat-num">248</div><div class="auth-stat-label">Employees</div></div>
+        <div><div class="auth-stat-num">5</div><div class="auth-stat-label">Departments</div></div>
+        <div><div class="auth-stat-num">99.2%</div><div class="auth-stat-label">Uptime</div></div>
+      </div>
+    </div>
+    <div class="auth-brand-foot">© 2026 AttendTrack · Internal HR platform</div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-card">
+      <div class="auth-title">Create account</div>
+      <p class="auth-desc">New joiners register here. HR verifies the department before the first check-in.</p>
+
+      <div id="formError" class="form-error-list" style="margin-bottom:18px" hidden>
+        <div class="t">Please fix the following</div>
+        <div id="formErrorItems"></div>
+      </div>
+      <div id="formOk" class="alert alert-success" style="margin-bottom:18px" hidden></div>
+
+      <form id="registerForm" class="form-col tight">
+        <div class="form-row-2">
+          <label class="field">
+            <span class="field-label">First name</span>
+            <input class="input" name="firstName" id="firstName" placeholder="Aarav" required>
+          </label>
+          <label class="field">
+            <span class="field-label">Last name</span>
+            <input class="input" name="lastName" id="lastName" placeholder="Shetty" required>
+          </label>
+        </div>
+        <label class="field">
+          <span class="field-label">Work email</span>
+          <input class="input" type="email" name="email" id="regEmail" placeholder="aarav.shetty@attendtrack.io" required>
+        </label>
+        <div class="form-row-2">
+          <label class="field">
+            <span class="field-label">Password</span>
+            <input class="input" type="password" name="password" id="regPassword" placeholder="8+ characters" required>
+          </label>
+          <label class="field">
+            <span class="field-label">Confirm password</span>
+            <input class="input" type="password" name="confirmPassword" id="confirmPassword" placeholder="Repeat password" required>
+          </label>
+        </div>
+        <div class="form-row-2">
+          <label class="field">
+            <span class="field-label">Role</span>
+            <select class="select" name="role" id="role">
+              <option value="EMPLOYEE">EMPLOYEE</option>
+              <option value="HR">HR</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">Department</span>
+            <select class="select" name="department" id="department">
+              <option value="IT">IT</option>
+              <option value="HR">HR</option>
+              <option value="Sales">Sales</option>
+              <option value="Finance">Finance</option>
+              <option value="Operations">Operations</option>
+            </select>
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="registerBtn">Create account</button>
+      </form>
+
+      <div class="auth-switch">Already registered? <a href="login.html">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/utils.js"></script>
+<script>
+  if (getToken()) {
+    window.location.href = getRole() === "HR" ? "hr-dashboard.html" : "employee-dashboard.html";
+  }
+
+  const form = document.getElementById("registerForm");
+  const errBox = document.getElementById("formError");
+  const errItems = document.getElementById("formErrorItems");
+  const okBox = document.getElementById("formOk");
+
+  function showErrors(list) {
+    errItems.innerHTML = list.map(e => `<div class="e">· ${escapeHtml(e)}</div>`).join("");
+    errBox.hidden = false;
+    okBox.hidden = true;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errBox.hidden = true;
+
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const password = document.getElementById("regPassword").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const role = document.getElementById("role").value;
+    const department = document.getElementById("department").value;
+
+    const errs = [];
+    if (!firstName) errs.push("First name is required.");
+    if (!lastName) errs.push("Last name is required.");
+    if (!email || !email.includes("@")) errs.push("A valid work email is required.");
+    if (password.length < 8) errs.push("Password must be at least 8 characters.");
+    if (password !== confirmPassword) errs.push("Password and confirmation do not match.");
+    if (errs.length) return showErrors(errs);
+
+    showLoading("registerBtn", "Creating account…");
+    try {
+      await registerEmployee({ firstName, lastName, email, password, role, department });
+      okBox.textContent = `Account created for ${firstName} ${lastName} (${role}, ${department}). Redirecting to sign in…`;
+      okBox.hidden = false;
+      showToast("Registration successful. Please sign in.", "success");
+      setTimeout(() => { window.location.href = "login.html"; }, 1500);
+    } catch (err) {
+      hideLoading("registerBtn", "Create account");
+      showErrors([errMsg(err, "Registration failed. Please try again.")]);
+    }
+  });
+</script>
+</body>
+</html>

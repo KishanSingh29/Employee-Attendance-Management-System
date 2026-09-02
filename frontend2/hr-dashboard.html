@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HR Dashboard · AttendTrack</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">A</div>
+      <div class="brand-name">AttendTrack</div>
+    </div>
+    <div class="sidebar-role" id="roleLabel">HR Console</div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="dashboard" href="hr-dashboard.html"><span class="nav-dot"></span>Dashboard</a>
+      <a class="nav-item" data-nav="employees" href="hr-employees.html"><span class="nav-dot"></span>Employees</a>
+      <a class="nav-item" data-nav="leaves" href="hr-leaves.html"><span class="nav-dot"></span>Leave Management</a>
+      <a class="nav-item" data-nav="reports" href="hr-attendance-report.html"><span class="nav-dot"></span>Reports</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-row">
+        <div class="avatar" data-init>–</div>
+        <div class="sidebar-user-meta">
+          <div class="sidebar-user-name" data-user-name>–</div>
+          <div class="sidebar-user-id" data-user-id>–</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div class="topbar-title">
+        <div class="topbar-title-main" id="pageTitle">HR Dashboard</div>
+        <div class="topbar-title-sub" id="pageSub">Company-wide attendance for today</div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-chip-avatar" data-init>–</div>
+          <div>
+            <div class="user-chip-name" data-user-name>–</div>
+            <div class="user-chip-meta" id="tbMeta">–</div>
+          </div>
+        </div>
+        <button class="btn-logout" id="logoutBtn">Logout</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="grid grid-auto-178" id="statCards">
+        <div class="stat top-blue"><div class="section-label">Total employees</div><div class="stat-value lg" id="stTotal">–</div><div class="stat-sub">on the platform</div></div>
+        <div class="stat top-green"><div class="section-label">Present today</div><div class="stat-value lg" id="stPresent">–</div><div class="stat-sub">includes late and half day</div></div>
+        <div class="stat top-red"><div class="section-label">Absent today</div><div class="stat-value lg" id="stAbsent">–</div><div class="stat-sub">no check-in recorded</div></div>
+        <div class="stat top-indigo"><div class="section-label">On leave</div><div class="stat-value lg" id="stLeave">–</div><div class="stat-sub">approved leave</div></div>
+        <div class="stat top-amber"><div class="section-label">Late today</div><div class="stat-value lg" id="stLate">–</div><div class="stat-sub">after 09:30 grace</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Today's attendance</div>
+            <div class="card-sub" id="attDateLabel">—</div>
+          </div>
+          <div class="flex gap-10" style="align-items:center;flex-wrap:wrap">
+            <input type="date" id="attDate" class="input sm" style="width:auto">
+            <a class="link-strong" href="hr-attendance-report.html">Monthly report</a>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="attTable">
+            <thead><tr>
+              <th class="sortable" data-sort="name" style="cursor:pointer" title="Click to sort">Employee<span data-arrow="name"></span></th>
+              <th class="sortable" data-sort="empId" style="cursor:pointer" title="Click to sort">EMP ID<span data-arrow="empId"></span></th>
+              <th class="sortable" data-sort="dept" style="cursor:pointer" title="Click to sort">Dept<span data-arrow="dept"></span></th>
+              <th class="sortable" data-sort="checkIn" style="cursor:pointer" title="Click to sort">Check-in<span data-arrow="checkIn"></span></th>
+              <th class="sortable" data-sort="checkOut" style="cursor:pointer" title="Click to sort">Check-out<span data-arrow="checkOut"></span></th>
+              <th class="sortable" data-sort="hours" style="cursor:pointer" title="Click to sort">Hours<span data-arrow="hours"></span></th>
+              <th class="sortable" data-sort="status" style="cursor:pointer" title="Click to sort">Status<span data-arrow="status"></span></th>
+            </tr></thead>
+            <tbody id="attBody">
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:34px 20px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="attEmpty" hidden></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Pending leave requests</div>
+          <div class="count-pill" id="pendingCount">0 awaiting</div>
+        </div>
+        <div id="pendingList"></div>
+        <div id="pendingEmpty" hidden></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- reject modal -->
+<div id="rejectModal" class="modal" hidden>
+  <div class="modal-card">
+    <div class="modal-title">Reject leave request</div>
+    <div class="modal-sub" id="rejectMeta">—</div>
+    <label class="field" style="margin-top:18px">
+      <span class="field-label sm">Reason for rejection</span>
+      <textarea class="textarea" id="rejectReason" rows="3" placeholder="Shared with the employee"></textarea>
+    </label>
+    <div id="rejectError" style="font:500 12.5px var(--sans);color:var(--red-dark);margin-top:9px" hidden></div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-outline" id="rejectCancel">Cancel</button>
+      <button class="btn btn-sm btn-red" id="rejectConfirm">Reject request</button>
+    </div>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="overlay-inner"><div class="overlay-spin"></div><div class="overlay-label">Working…</div></div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/utils.js"></script>
+<script>
+  checkAuth();
+  checkHR();
+  initShell("dashboard", "HR Dashboard", "Company-wide attendance for today");
+
+  const attDate = document.getElementById("attDate");
+  attDate.value = getTodayDate();
+  document.getElementById("attDateLabel").textContent = formatDateLong(getTodayDate());
+
+  function renderStats(d) {
+    document.getElementById("stTotal").textContent = num(pick(d, ["totalEmployees", "employeeCount", "total"], "–"), "–");
+    document.getElementById("stPresent").textContent = num(pick(d, ["presentToday", "present", "totalPresent"], 0));
+    document.getElementById("stAbsent").textContent = num(pick(d, ["absentToday", "absent", "totalAbsent"], 0));
+    document.getElementById("stLeave").textContent = num(pick(d, ["onLeaveToday", "onLeave", "totalOnLeave"], 0));
+    document.getElementById("stLate").textContent = num(pick(d, ["lateToday", "late", "totalLate"], 0));
+  }
+
+  let attRows = [];
+  let attSort = { column: null, dir: 1 };   // dir: 1 = asc, -1 = desc
+
+  function normalizeAtt(r) {
+    return {
+      name: pick(r, ["employeeName", "name", "fullName"],
+        (pick(r, ["firstName"], "") + " " + pick(r, ["lastName"], "")).trim() || "-"),
+      empId: pick(r, ["employeeId", "empId", "id"], "-"),
+      dept: pick(r, ["department", "dept"], "-"),
+      checkIn: pick(r, ["checkIn", "checkInTime", "inTime"]) || null,
+      checkOut: pick(r, ["checkOut", "checkOutTime", "outTime"]) || null,
+      hours: pick(r, ["workingHours", "workHours", "totalHours", "hours"]),
+      status: pick(r, ["status"], "ABSENT")
+    };
+  }
+
+  function renderAttendance(rows) {
+    attRows = (Array.isArray(rows) ? rows : []).map(normalizeAtt);
+    paintAttendance();
+  }
+
+  function paintAttendance() {
+    const body = document.getElementById("attBody");
+    const emptyBox = document.getElementById("attEmpty");
+    if (attRows.length === 0) {
+      body.innerHTML = "";
+      emptyBox.hidden = false;
+      emptyBox.innerHTML = emptyState("No attendance for this date", "Nothing has been recorded yet.");
+      updateSortArrows();
+      return;
+    }
+    emptyBox.hidden = true;
+
+    const list = attRows.slice();
+    if (attSort.column) {
+      const c = attSort.column, dir = attSort.dir;
+      list.sort((a, b) => {
+        let A = a[c], B = b[c];
+        if (c === "hours") { A = num(A, -1); B = num(B, -1); return (A - B) * dir; }
+        if (c === "checkIn" || c === "checkOut") { A = A || "~"; B = B || "~"; }   // blanks last
+        return String(A).localeCompare(String(B), undefined, { numeric: true }) * dir;
+      });
+    }
+
+    body.innerHTML = list.map(r => `<tr>
+      <td class="strong">${escapeHtml(r.name)}</td>
+      <td class="mono">${escapeHtml(r.empId)}</td>
+      <td>${escapeHtml(r.dept)}</td>
+      <td class="mono">${formatTime(r.checkIn)}</td>
+      <td class="mono">${formatTime(r.checkOut)}</td>
+      <td class="mono">${formatHours(r.hours)}</td>
+      <td>${getStatusBadge(r.status)}</td>
+    </tr>`).join("");
+    updateSortArrows();
+  }
+
+  function updateSortArrows() {
+    document.querySelectorAll("#attTable [data-arrow]").forEach(el => {
+      el.textContent = (el.dataset.arrow === attSort.column)
+        ? (attSort.dir > 0 ? " ↑" : " ↓") : "";
+    });
+  }
+
+  // column: "name" | "empId" | "dept" | "checkIn" | "checkOut" | "hours" | "status"
+  function sortTable(column, tableId) {
+    if (attSort.column === column) attSort.dir = -attSort.dir;
+    else { attSort.column = column; attSort.dir = 1; }
+    paintAttendance();
+  }
+
+  document.querySelectorAll("#attTable th[data-sort]").forEach(th =>
+    th.addEventListener("click", () => sortTable(th.dataset.sort, "attTable")));
+
+  let pendingRows = [];
+
+  function renderPending(rows) {
+    pendingRows = Array.isArray(rows) ? rows : [];
+    const list = document.getElementById("pendingList");
+    const emptyBox = document.getElementById("pendingEmpty");
+    document.getElementById("pendingCount").textContent = `${pendingRows.length} awaiting`;
+    if (pendingRows.length === 0) {
+      list.innerHTML = "";
+      emptyBox.hidden = false;
+      emptyBox.innerHTML = emptyState("Nothing pending", "Every leave request has been actioned.");
+      return;
+    }
+    emptyBox.hidden = true;
+    list.innerHTML = pendingRows.map(r => {
+      const id = pick(r, ["id", "leaveId", "requestId"]);
+      const name = pick(r, ["employeeName", "name"], "-");
+      const start = pick(r, ["startDate", "start", "fromDate"]);
+      const end = pick(r, ["endDate", "end", "toDate"]);
+      const days = pick(r, ["days", "numberOfDays", "totalDays"], dayCount(start, end));
+      return `<div class="pending-row">
+        <div class="avatar">${initials(name)}</div>
+        <div class="pending-emp">
+          <div class="pending-emp-name">${escapeHtml(name)}</div>
+          <div class="pending-emp-meta">${escapeHtml(pick(r, ["employeeId", "empId"], "-"))} · ${escapeHtml(pick(r, ["department", "dept"], "-"))}</div>
+        </div>
+        <div class="pending-type">
+          <div class="pending-type-main">${escapeHtml(pick(r, ["leaveType", "type"], "-"))} · ${days} day(s)</div>
+          <div class="pending-type-dates">${formatRange(start, end)}</div>
+        </div>
+        <div class="pending-reason">${escapeHtml(pick(r, ["reason"], "-"))}</div>
+        <div class="pending-actions">
+          <button class="btn btn-sm btn-green" data-approve="${id}">Approve</button>
+          <button class="btn btn-sm btn-red" data-reject="${id}">Reject</button>
+        </div>
+      </div>`;
+    }).join("");
+
+    list.querySelectorAll("[data-approve]").forEach(b =>
+      b.addEventListener("click", () => doApprove(b.dataset.approve)));
+    list.querySelectorAll("[data-reject]").forEach(b =>
+      b.addEventListener("click", () => openReject(b.dataset.reject)));
+  }
+
+  async function doApprove(id) {
+    setOverlay(true, "Approving…");
+    try {
+      await hrApproveLeave(id);
+      showToast("Leave approved.", "success");
+      await loadPending();
+    } catch (err) {
+      showToast(errMsg(err, "Could not approve the request."), "danger");
+    } finally { setOverlay(false); }
+  }
+
+  // reject modal
+  const rejectModal = document.getElementById("rejectModal");
+  let rejectId = null;
+  function openReject(id) {
+    rejectId = id;
+    const r = pendingRows.find(x => String(pick(x, ["id", "leaveId", "requestId"])) === String(id)) || {};
+    document.getElementById("rejectMeta").textContent =
+      `${pick(r, ["employeeName", "name"], "")} · ${pick(r, ["leaveType", "type"], "")} · ${formatRange(pick(r, ["startDate", "start"]), pick(r, ["endDate", "end"]))}`;
+    document.getElementById("rejectReason").value = "";
+    document.getElementById("rejectError").hidden = true;
+    rejectModal.hidden = false;
+  }
+  document.getElementById("rejectCancel").addEventListener("click", () => rejectModal.hidden = true);
+  rejectModal.addEventListener("click", e => { if (e.target === rejectModal) rejectModal.hidden = true; });
+  document.getElementById("rejectConfirm").addEventListener("click", async () => {
+    const reason = document.getElementById("rejectReason").value.trim();
+    const errEl = document.getElementById("rejectError");
+    if (reason.length < 5) {
+      errEl.textContent = "Give the employee a reason (at least 5 characters).";
+      errEl.hidden = false;
+      return;
+    }
+    setOverlay(true, "Rejecting…");
+    try {
+      await hrRejectLeave(rejectId, reason);
+      rejectModal.hidden = true;
+      showToast("Leave rejected. The employee has been notified.", "danger");
+      await loadPending();
+    } catch (err) {
+      errEl.textContent = errMsg(err, "Could not reject the request.");
+      errEl.hidden = false;
+    } finally { setOverlay(false); }
+  });
+
+  async function loadDashboard() {
+    try { renderStats(await hrGetDashboard() || {}); }
+    catch (err) { showToast(errMsg(err, "Could not load dashboard stats."), "danger"); }
+  }
+  async function loadAttendance() {
+    document.getElementById("attDateLabel").textContent =
+      formatDateLong(attDate.value) + " · click a column header to sort";
+    document.getElementById("attBody").innerHTML =
+      `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:34px 20px">Loading…</td></tr>`;
+    try {
+      const list = await hrGetAllAttendance(attDate.value);
+      renderAttendance(Array.isArray(list) ? list : pick(list, ["records", "content", "data"], []));
+    } catch (err) {
+      document.getElementById("attBody").innerHTML = errorRow(7, errMsg(err, "Could not load attendance."));
+    }
+  }
+  async function loadPending() {
+    try {
+      const list = await hrGetPendingLeaves();
+      renderPending(Array.isArray(list) ? list : pick(list, ["requests", "content", "data"], []));
+    } catch (err) {
+      document.getElementById("pendingList").innerHTML =
+        `<div class="empty"><div class="empty-title" style="color:var(--red-dark)">${escapeHtml(errMsg(err, "Could not load pending leaves."))}</div></div>`;
+    }
+  }
+
+  attDate.addEventListener("change", loadAttendance);
+  loadDashboard();
+  loadAttendance();
+  loadPending();
+</script>
+</body>
+</html>

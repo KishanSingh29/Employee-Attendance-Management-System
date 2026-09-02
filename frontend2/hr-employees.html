@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Employees · AttendTrack</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .emp-avatar{
+    width:36px;height:36px;border-radius:50%;
+    background:#2563eb;color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:600;font-size:.8rem;flex:none;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">A</div>
+      <div class="brand-name">AttendTrack</div>
+    </div>
+    <div class="sidebar-role" id="roleLabel">HR Console</div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="dashboard" href="hr-dashboard.html"><span class="nav-dot"></span>Dashboard</a>
+      <a class="nav-item" data-nav="employees" href="hr-employees.html"><span class="nav-dot"></span>Employees</a>
+      <a class="nav-item" data-nav="leaves" href="hr-leaves.html"><span class="nav-dot"></span>Leave Management</a>
+      <a class="nav-item" data-nav="reports" href="hr-attendance-report.html"><span class="nav-dot"></span>Reports</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-row">
+        <div class="avatar" data-init>–</div>
+        <div class="sidebar-user-meta">
+          <div class="sidebar-user-name" data-user-name>–</div>
+          <div class="sidebar-user-id" data-user-id>–</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div class="topbar-title">
+        <div class="topbar-title-main" id="pageTitle">Employees</div>
+        <div class="topbar-title-sub" id="pageSub">All active employees and their records</div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-chip-avatar" data-init>–</div>
+          <div>
+            <div class="user-chip-name" data-user-name>–</div>
+            <div class="user-chip-meta" id="tbMeta">–</div>
+          </div>
+        </div>
+        <button class="btn-logout" id="logoutBtn">Logout</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="filter-bar">
+        <input id="search" placeholder="Search by name, email or employee ID" style="flex:1;min-width:220px">
+        <select id="dept">
+          <option value="ALL">All departments</option>
+          <option value="IT">IT</option>
+          <option value="HR">HR</option>
+          <option value="Sales">Sales</option>
+          <option value="Finance">Finance</option>
+          <option value="Operations">Operations</option>
+        </select>
+        <div class="filter-count"><span id="empCount">0</span> shown</div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>EMP ID</th><th>Name</th><th>Department</th><th>Role</th><th class="right">Actions</th>
+            </tr></thead>
+            <tbody id="empBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:34px 20px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="emptyBox" hidden></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="overlay-inner"><div class="overlay-spin"></div><div class="overlay-label">Working…</div></div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/utils.js"></script>
+<script>
+  checkAuth();
+  checkHR();
+  initShell("employees", "Employees", "All active employees and their records");
+
+  let allEmployees = [];
+
+  function normalize(e) {
+    const first = pick(e, ["firstName", "fName"], "");
+    const last = pick(e, ["lastName", "lName"], "");
+    const name = pick(e, ["name", "fullName"], (first + " " + last).trim() || "-");
+    return {
+      id: pick(e, ["employeeId", "empId", "id", "userId"], "-"),
+      userId: pick(e, ["userId", "id", "employeeId"], ""),
+      name,
+      email: pick(e, ["email"], "-"),
+      dept: pick(e, ["department", "dept"], "-"),
+      role: pick(e, ["role"], "EMPLOYEE")
+    };
+  }
+
+  function render() {
+    const q = document.getElementById("search").value.trim().toLowerCase();
+    const dept = document.getElementById("dept").value;
+    const rows = allEmployees.filter(e =>
+      (dept === "ALL" || e.dept === dept) &&
+      (!q || (e.name + " " + e.id + " " + e.email).toLowerCase().includes(q))
+    );
+    document.getElementById("empCount").textContent = rows.length;
+
+    const body = document.getElementById("empBody");
+    const emptyBox = document.getElementById("emptyBox");
+    if (rows.length === 0) {
+      body.innerHTML = "";
+      emptyBox.hidden = false;
+      emptyBox.innerHTML = emptyState("No employees match that search", "Try a different name, ID or department.");
+      return;
+    }
+    emptyBox.hidden = true;
+    body.innerHTML = rows.map(e => {
+      const detailUrl = "hr-employee-detail.html?userId=" + encodeURIComponent(e.userId) +
+        "&name=" + encodeURIComponent(e.name) +
+        "&empId=" + encodeURIComponent(e.id) +
+        "&dept=" + encodeURIComponent(e.dept) +
+        "&email=" + encodeURIComponent(e.email);
+      return `<tr>
+        <td class="mono">${escapeHtml(e.id)}</td>
+        <td>
+          <div class="cell-user">
+            <div class="emp-avatar">${initials(e.name)}</div>
+            <div>
+              <div class="cell-user-name">${escapeHtml(e.name)}</div>
+              <div class="cell-user-mail">${escapeHtml(e.email)}</div>
+            </div>
+          </div>
+        </td>
+        <td>${escapeHtml(e.dept)}</td>
+        <td><span class="role-pill ${e.role === "HR" ? "hr" : "emp"}">${escapeHtml(e.role)}</span></td>
+        <td class="right">
+          <a class="btn-ghost-blue" href="${detailUrl}">View attendance</a>
+        </td>
+      </tr>`;
+    }).join("");
+  }
+
+  async function load() {
+    setOverlay(true, "Loading employees…");
+    try {
+      const list = await getAllEmployees();
+      const arr = Array.isArray(list) ? list : pick(list, ["employees", "content", "data"], []);
+      allEmployees = arr.map(normalize);
+      render();
+    } catch (err) {
+      document.getElementById("empBody").innerHTML = errorRow(5, errMsg(err, "Could not load employees."));
+    } finally {
+      setOverlay(false);
+    }
+  }
+
+  document.getElementById("search").addEventListener("input", render);
+  document.getElementById("dept").addEventListener("change", render);
+  load();
+</script>
+</body>
+</html>

@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#1e293b">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#1e293b"/>
+    <rect x="360" y="240" width="480" height="320" rx="40" fill="#2563eb"/>
+    <text x="600" y="470" font-family="Helvetica, Arial, sans-serif" font-size="240" font-weight="700" fill="#ffffff" text-anchor="middle">A</text>
+  </svg>
+</template>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#f1f5f9;font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+  a{color:#2563eb;text-decoration:none}
+  a:hover{color:#1e40af}
+  input,select,textarea,button{font-family:'IBM Plex Sans',system-ui,sans-serif}
+  table{border-collapse:collapse;width:100%}
+  @keyframes atspin{to{transform:rotate(360deg)}}
+  @keyframes attoast{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<sc-if value="{{ isAuth }}" hint-placeholder-val="{{ true }}">
+<div style="min-height:100vh;display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr))">
+  <div style="background:#1e293b;padding:56px 52px;display:flex;flex-direction:column;justify-content:space-between;color:#e2e8f0;min-height:320px">
+    <div style="display:flex;align-items:center;gap:11px">
+      <div style="width:34px;height:34px;border-radius:9px;background:#2563eb;display:flex;align-items:center;justify-content:center;font:700 15px 'IBM Plex Sans',sans-serif;color:#fff">A</div>
+      <div style="font:600 19px 'IBM Plex Sans',sans-serif;letter-spacing:-.01em;color:#fff">AttendTrack</div>
+    </div>
+    <div style="max-width:420px;padding:40px 0">
+      <div style="font:600 34px/1.2 'IBM Plex Sans',sans-serif;letter-spacing:-.02em;color:#fff;text-wrap:pretty">Attendance, leave and payroll days in one place.</div>
+      <p style="margin:18px 0 0;font:400 15px/1.6 'IBM Plex Sans',sans-serif;color:#94a3b8;text-wrap:pretty">Employees mark check-in and check-out, track paid and sick leave balances, and see exactly how unpaid days affect the month. HR approves requests and exports the monthly report.</p>
+      <div style="display:flex;gap:26px;margin-top:34px">
+        <div><div style="font:600 22px 'IBM Plex Mono',monospace;color:#fff">248</div><div style="font:400 12px 'IBM Plex Sans',sans-serif;color:#94a3b8;margin-top:4px">Employees</div></div>
+        <div><div style="font:600 22px 'IBM Plex Mono',monospace;color:#fff">5</div><div style="font:400 12px 'IBM Plex Sans',sans-serif;color:#94a3b8;margin-top:4px">Departments</div></div>
+        <div><div style="font:600 22px 'IBM Plex Mono',monospace;color:#fff">99.2%</div><div style="font:400 12px 'IBM Plex Sans',sans-serif;color:#94a3b8;margin-top:4px">Uptime</div></div>
+      </div>
+    </div>
+    <div style="font:400 12px 'IBM Plex Sans',sans-serif;color:#64748b">© 2026 AttendTrack · Internal HR platform</div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:center;padding:48px 32px">
+    <div style="width:100%;max-width:404px">
+
+      <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <div style="font:600 26px 'IBM Plex Sans',sans-serif;letter-spacing:-.02em;color:#0f172a">Sign in</div>
+        <p style="margin:8px 0 26px;font:400 14px/1.5 'IBM Plex Sans',sans-serif;color:#64748b">Use your work email to access your attendance record.</p>
+
+        <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid #fecaca;background:#fef2f2;border-radius:8px;margin-bottom:18px">
+          <div style="width:16px;height:16px;border-radius:50%;background:#dc2626;color:#fff;font:700 11px/16px 'IBM Plex Sans',sans-serif;text-align:center;flex:none">!</div>
+          <div style="font:500 13px/1.45 'IBM Plex Sans',sans-serif;color:#b91c1c">{{ loginError }}</div>
+        </div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <label style="display:flex;flex-direction:column;gap:7px">
+            <span style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Email address</span>
+            <input type="email" name="email" onChange="{{ onField }}" placeholder="priya.menon@attendtrack.io" style="width:100%;padding:11px 13px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:400 14px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:7px">
+            <span style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Password</span>
+            <input type="password" name="password" onChange="{{ onField }}" placeholder="••••••••" style="width:100%;padding:11px 13px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:400 14px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+          </label>
+          <button type="button" onClick="{{ doLogin }}" style="width:100%;padding:12px 18px;border:0;border-radius:8px;background:#2563eb;color:#fff;font:600 14.5px 'IBM Plex Sans',sans-serif;cursor:pointer;transition:background .15s" style-hover="background:#1e40af">{{ loginBtn }}</button>
+        </div>
+
+        <div style="margin-top:20px;padding:14px;border:1px dashed #cbd5e1;border-radius:8px;background:#f8fafc">
+          <div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#64748b">Demo accounts</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:9px">
+            <div style="font:400 12.5px 'IBM Plex Mono',monospace;color:#334155">priya.menon@attendtrack.io · employee</div>
+            <div style="font:400 12.5px 'IBM Plex Mono',monospace;color:#334155">neha.rao@attendtrack.io · HR</div>
+            <div style="font:400 12.5px 'IBM Plex Mono',monospace;color:#64748b">any password, 6+ characters</div>
+          </div>
+        </div>
+
+        <div style="margin-top:22px;font:400 13.5px 'IBM Plex Sans',sans-serif;color:#64748b">Don't have an account? <a href="#" onClick="{{ goRegister }}" style="font-weight:600">Register</a></div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isRegister }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="font:600 26px 'IBM Plex Sans',sans-serif;letter-spacing:-.02em;color:#0f172a">Create account</div>
+        <p style="margin:8px 0 24px;font:400 14px/1.5 'IBM Plex Sans',sans-serif;color:#64748b">New joiners register here. HR verifies the department before the first check-in.</p>
+
+        <sc-if value="{{ hasRegErrors }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:12px 14px;border:1px solid #fecaca;background:#fef2f2;border-radius:8px;margin-bottom:18px">
+          <div style="font:600 12.5px 'IBM Plex Sans',sans-serif;color:#b91c1c;margin-bottom:6px">Please fix the following</div>
+          <sc-for list="{{ regErrors }}" as="e" hint-placeholder-count="2">
+            <div style="font:400 12.5px/1.6 'IBM Plex Sans',sans-serif;color:#b91c1c">· {{ e }}</div>
+          </sc-for>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ regOk }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:12px 14px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:8px;margin-bottom:18px;font:500 13px/1.45 'IBM Plex Sans',sans-serif;color:#15803d">{{ regOk }}</div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <label style="display:flex;flex-direction:column;gap:7px">
+              <span style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">First name</span>
+              <input name="firstName" onChange="{{ onField }}" placeholder="Aarav" style="width:100%;padding:11px 13px;border:1px solid #cbd5e1;border-radius:8px;font:400 14px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:7px">
+              <span style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Last name</span>
+              <input name="lastName" onChange="{{ onField }}" placeholder="Shetty" style="width:100%;padding:11px 13px;border:1px solid #cbd5e1;border-radius:8px;font:400 14px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+            </label>
+          </div>
+          <label style="display:flex;flex-direction:column;gap:7px">
+            <span style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Work email</span>
+            <input type="email" name="regEmail" onChange="{{ onField }}" placeholder="aarav.shetty@attendtrack.io" style="width:100%;padding:11px 13px;border:1px solid #cbd5e1;border-radius:8px;font:400 14px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <label style="display:flex;flex-direction:column;gap:7px">
+              <span style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Password</span>
+              <input type="password" name="regPassword" onChange="{{ onField }}" placeholder="8+ characters" style="width:100%;padding:11px 13px;border:1px solid #cbd5e1;border-radius:8px;font:400 14px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:7px">
+              <span style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Confirm password</span>
+              <input type="password" name="confirmPassword" onChange="{{ onField }}" placeholder="Repeat password" style="width:100%;padding:11px 13px;border:1px solid #cbd5e1;border-radius:8px;font:400 14px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+            </label>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <label style="display:flex;flex-direction:column;gap:7px">
+              <span style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Role</span>
+              <select name="role" onChange="{{ onField }}" style="width:100%;padding:11px 13px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:400 14px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+                <option value="EMPLOYEE">EMPLOYEE</option>
+                <option value="HR">HR</option>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:7px">
+              <span style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Department</span>
+              <select name="department" onChange="{{ onField }}" style="width:100%;padding:11px 13px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:400 14px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+                <option value="IT">IT</option>
+                <option value="HR">HR</option>
+                <option value="Sales">Sales</option>
+                <option value="Finance">Finance</option>
+                <option value="Operations">Operations</option>
+              </select>
+            </label>
+          </div>
+          <button type="button" onClick="{{ doRegister }}" style="width:100%;padding:12px 18px;border:0;border-radius:8px;background:#2563eb;color:#fff;font:600 14.5px 'IBM Plex Sans',sans-serif;cursor:pointer;transition:background .15s" style-hover="background:#1e40af">Create account</button>
+        </div>
+        <div style="margin-top:20px;font:400 13.5px 'IBM Plex Sans',sans-serif;color:#64748b">Already registered? <a href="#" onClick="{{ goLogin }}" style="font-weight:600">Sign in</a></div>
+      </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;min-height:100vh;background:#f1f5f9">
+
+  <sc-if value="{{ sidebar }}" hint-placeholder-val="{{ true }}">
+  <aside style="width:238px;flex:none;background:#1e293b;display:flex;flex-direction:column;position:sticky;top:0;height:100vh">
+    <div style="display:flex;align-items:center;gap:10px;padding:20px 20px 22px">
+      <div style="width:30px;height:30px;border-radius:8px;background:#2563eb;display:flex;align-items:center;justify-content:center;font:700 14px 'IBM Plex Sans',sans-serif;color:#fff">A</div>
+      <div style="font:600 16.5px 'IBM Plex Sans',sans-serif;color:#fff;letter-spacing:-.01em">AttendTrack</div>
+    </div>
+    <div style="padding:0 12px;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#64748b;margin-bottom:8px;padding-left:20px">{{ roleLabel }}</div>
+    <nav style="display:flex;flex-direction:column;gap:3px;padding:0 12px">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
+        <div onClick="{{ n.go }}" style="display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:8px;cursor:pointer;background:{{ n.bg }};transition:background .15s" style-hover="background:rgba(255,255,255,.07)">
+          <div style="width:6px;height:6px;border-radius:2px;background:{{ n.dot }};flex:none"></div>
+          <div style="font:{{ n.weight }} 13.5px 'IBM Plex Sans',sans-serif;color:{{ n.fg }}">{{ n.label }}</div>
+        </div>
+      </sc-for>
+    </nav>
+    <div style="margin-top:auto;padding:16px;border-top:1px solid rgba(255,255,255,.08)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;border-radius:50%;background:#334155;display:flex;align-items:center;justify-content:center;font:600 12px 'IBM Plex Sans',sans-serif;color:#e2e8f0;flex:none">{{ initials }}</div>
+        <div style="min-width:0">
+          <div style="font:600 13px 'IBM Plex Sans',sans-serif;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ userName }}</div>
+          <div style="font:400 11.5px 'IBM Plex Mono',monospace;color:#64748b">{{ userEmpId }}</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  </sc-if>
+
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+    <header style="height:62px;flex:none;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:14px;padding:0 22px;position:sticky;top:0;z-index:20">
+      <button type="button" onClick="{{ toggleSidebar }}" style="width:34px;height:34px;flex:none;border:1px solid #e2e8f0;border-radius:8px;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px" style-hover="background:#f1f5f9">
+        <div style="width:14px;height:1.5px;background:#334155"></div>
+        <div style="width:14px;height:1.5px;background:#334155"></div>
+        <div style="width:14px;height:1.5px;background:#334155"></div>
+      </button>
+      <div style="min-width:0">
+        <div style="font:600 15px 'IBM Plex Sans',sans-serif;color:#0f172a;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ pageTitle }}</div>
+        <div style="font:400 12px 'IBM Plex Sans',sans-serif;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ pageSub }}</div>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+        <div style="text-align:right;display:none" style-hover="display:none"></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:5px 12px 5px 6px;border:1px solid #e2e8f0;border-radius:999px">
+          <div style="width:28px;height:28px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font:600 11.5px 'IBM Plex Sans',sans-serif;color:#1e40af;flex:none">{{ initials }}</div>
+          <div>
+            <div style="font:600 12.5px 'IBM Plex Sans',sans-serif;color:#0f172a;line-height:1.2">{{ userName }}</div>
+            <div style="font:400 11px 'IBM Plex Mono',monospace;color:#64748b;line-height:1.3">{{ userEmpId }} · {{ userDept }}</div>
+          </div>
+        </div>
+        <button type="button" onClick="{{ logout }}" style="padding:9px 15px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#334155;font:600 12.5px 'IBM Plex Sans',sans-serif;cursor:pointer;transition:all .15s" style-hover="background:#fef2f2;border-color:#fecaca;color:#b91c1c">Logout</button>
+      </div>
+    </header>
+
+    <main style="flex:1;padding:24px 26px 56px;display:flex;flex-direction:column;gap:20px;max-width:1500px;width:100%">
+
+      <!-- EMPLOYEE DASHBOARD -->
+      <sc-if value="{{ sDash }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+          <div style="background:#1e293b;border-radius:12px;padding:22px 24px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;min-height:150px">
+            <div>
+              <div style="font:400 12.5px 'IBM Plex Sans',sans-serif;color:#94a3b8">{{ todayLong }}</div>
+              <div style="font:600 23px 'IBM Plex Sans',sans-serif;letter-spacing:-.02em;margin-top:8px">{{ greeting }}, {{ firstName }}</div>
+            </div>
+            <div style="font:400 13px/1.5 'IBM Plex Sans',sans-serif;color:#94a3b8;text-wrap:pretty">{{ shiftLine }}</div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:22px 24px;display:flex;flex-direction:column;gap:16px;min-height:150px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b">Today's status</div>
+              <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:{{ todayBg }};color:{{ todayFg }};font:600 11.5px 'IBM Plex Sans',sans-serif;letter-spacing:.04em">{{ todayStatus }}</div>
+            </div>
+            <div style="font:400 13px/1.5 'IBM Plex Sans',sans-serif;color:#475569;text-wrap:pretty">{{ todayNote }}</div>
+            <div style="display:flex;gap:10px;margin-top:auto;flex-wrap:wrap">
+              <button type="button" onClick="{{ checkIn }}" disabled="{{ inDisabled }}" style="flex:1;min-width:130px;padding:13px 18px;border:0;border-radius:9px;background:{{ inBg }};color:{{ inFg }};font:600 14px 'IBM Plex Sans',sans-serif;cursor:{{ inCursor }};transition:filter .15s" style-hover="filter:brightness(.93)">Check In</button>
+              <button type="button" onClick="{{ checkOut }}" disabled="{{ outDisabled }}" style="flex:1;min-width:130px;padding:13px 18px;border:0;border-radius:9px;background:{{ outBg }};color:{{ outFg }};font:600 14px 'IBM Plex Sans',sans-serif;cursor:{{ outCursor }};transition:filter .15s" style-hover="filter:brightness(.93)">Check Out</button>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:22px 24px;min-height:150px">
+            <div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b">Today's timesheet</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px">
+              <div><div style="font:600 18px 'IBM Plex Mono',monospace;color:#0f172a">{{ inTime }}</div><div style="font:400 11.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:5px">Check-in</div></div>
+              <div><div style="font:600 18px 'IBM Plex Mono',monospace;color:#0f172a">{{ outTime }}</div><div style="font:400 11.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:5px">Check-out</div></div>
+              <div><div style="font:600 18px 'IBM Plex Mono',monospace;color:#2563eb">{{ workHours }}</div><div style="font:400 11.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:5px">Worked</div></div>
+            </div>
+            <div style="margin-top:18px;padding-top:14px;border-top:1px solid #f1f5f9;font:400 12px 'IBM Plex Sans',sans-serif;color:#64748b">Standard shift 09:00 — 18:00 · grace until 09:30</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px">
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:20px 22px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between"><div style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Paid leave remaining</div><div style="font:400 11.5px 'IBM Plex Mono',monospace;color:#64748b">{{ plUsed }}/{{ plTotal }} used</div></div>
+            <div style="font:600 30px 'IBM Plex Mono',monospace;color:#16a34a;margin-top:10px">{{ plLeft }}<span style="font:400 13px 'IBM Plex Sans',sans-serif;color:#64748b"> days</span></div>
+            <div style="height:6px;border-radius:4px;background:#f1f5f9;margin-top:14px;overflow:hidden"><div style="height:100%;border-radius:4px;background:#16a34a;width:{{ plPct }}"></div></div>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:20px 22px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between"><div style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Sick leave remaining</div><div style="font:400 11.5px 'IBM Plex Mono',monospace;color:#64748b">{{ slUsed }}/{{ slTotal }} used</div></div>
+            <div style="font:600 30px 'IBM Plex Mono',monospace;color:#2563eb;margin-top:10px">{{ slLeft }}<span style="font:400 13px 'IBM Plex Sans',sans-serif;color:#64748b"> days</span></div>
+            <div style="height:6px;border-radius:4px;background:#f1f5f9;margin-top:14px;overflow:hidden"><div style="height:100%;border-radius:4px;background:#2563eb;width:{{ slPct }}"></div></div>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:20px 22px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between"><div style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Unpaid days used</div><div style="font:400 11.5px 'IBM Plex Mono',monospace;color:#64748b">this year</div></div>
+            <div style="font:600 30px 'IBM Plex Mono',monospace;color:#d97706;margin-top:10px">{{ unpaidUsed }}<span style="font:400 13px 'IBM Plex Sans',sans-serif;color:#64748b"> days</span></div>
+            <div style="font:400 12px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:16px">Deduction so far {{ deductAmount }}</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;align-items:start">
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f1f5f9">
+              <div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#0f172a">Recent attendance</div>
+              <a href="#" onClick="{{ goAttendance }}" style="font:600 12.5px 'IBM Plex Sans',sans-serif">View all</a>
+            </div>
+            <div style="overflow-x:auto">
+              <table>
+                <thead><tr>
+                  <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Date</th>
+                  <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">In</th>
+                  <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Out</th>
+                  <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Hours</th>
+                  <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Status</th>
+                </tr></thead>
+                <tbody>
+                <sc-for list="{{ recentRows }}" as="r" hint-placeholder-count="5">
+                  <tr style="background:{{ r.zebra }}">
+                    <td style="font:500 13px 'IBM Plex Sans',sans-serif;color:#0f172a;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.date }}</td>
+                    <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.in }}</td>
+                    <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.out }}</td>
+                    <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.hours }}</td>
+                    <td style="padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap"><span style="display:inline-block;padding:4px 10px;border-radius:999px;background:{{ r.bg }};color:{{ r.fg }};font:600 11px 'IBM Plex Sans',sans-serif">{{ r.label }}</span></td>
+                  </tr>
+                </sc-for>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:20px 22px">
+            <div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#0f172a">Quick leave request</div>
+            <p style="margin:6px 0 16px;font:400 12.5px/1.5 'IBM Plex Sans',sans-serif;color:#64748b">Requests go to HR immediately. Paid and sick leave are deducted from balance on approval.</p>
+            <sc-if value="{{ hasLeaveErrors }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:11px 13px;border:1px solid #fecaca;background:#fef2f2;border-radius:8px;margin-bottom:14px">
+              <sc-for list="{{ leaveErrors }}" as="e" hint-placeholder-count="1">
+                <div style="font:500 12.5px/1.55 'IBM Plex Sans',sans-serif;color:#b91c1c">· {{ e }}</div>
+              </sc-for>
+            </div>
+            </sc-if>
+            <div style="display:flex;flex-direction:column;gap:13px">
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#334155">Leave type</span>
+                <select name="leaveType" onChange="{{ onField }}" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:400 13.5px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+                  <option value="PAID">PAID</option>
+                  <option value="SICK">SICK</option>
+                  <option value="UNPAID">UNPAID</option>
+                </select>
+              </label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <label style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#334155">Start date</span>
+                  <input type="date" name="start" onChange="{{ onField }}" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font:400 13.5px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#334155">End date</span>
+                  <input type="date" name="end" onChange="{{ onField }}" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font:400 13.5px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+                </label>
+              </div>
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#334155">Reason</span>
+                <textarea name="reason" onChange="{{ onField }}" rows="3" placeholder="Give HR enough context to approve quickly" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font:400 13.5px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none;resize:vertical" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)"></textarea>
+              </label>
+              <button type="button" onClick="{{ applyLeave }}" style="padding:11px 18px;border:0;border-radius:8px;background:#2563eb;color:#fff;font:600 13.5px 'IBM Plex Sans',sans-serif;cursor:pointer;transition:background .15s" style-hover="background:#1e40af">Submit request</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- EMPLOYEE ATTENDANCE -->
+      <sc-if value="{{ sAtt }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:14px 18px">
+          <div style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Period</div>
+          <select name="month" onChange="{{ onFilter }}" value="{{ month }}" style="padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:500 13px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none">
+            <option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
+          </select>
+          <select name="year" onChange="{{ onFilter }}" value="{{ year }}" style="padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:500 13px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none">
+            <option value="2025">2025</option><option value="2026">2026</option>
+          </select>
+          <div style="margin-left:auto;display:flex;gap:4px;padding:3px;background:#f1f5f9;border-radius:9px">
+            <div onClick="{{ setTable }}" style="padding:7px 15px;border-radius:7px;cursor:pointer;font:600 12.5px 'IBM Plex Sans',sans-serif;background:{{ tableTabBg }};color:{{ tableTabFg }}">Table</div>
+            <div onClick="{{ setCal }}" style="padding:7px 15px;border-radius:7px;cursor:pointer;font:600 12.5px 'IBM Plex Sans',sans-serif;background:{{ calTabBg }};color:{{ calTabFg }}">Calendar</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px">
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:18px 20px;border-top:3px solid #16a34a"><div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b">Total present</div><div style="font:600 28px 'IBM Plex Mono',monospace;color:#0f172a;margin-top:8px">{{ sumPresent }}</div></div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:18px 20px;border-top:3px solid #dc2626"><div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b">Total absent</div><div style="font:600 28px 'IBM Plex Mono',monospace;color:#0f172a;margin-top:8px">{{ sumAbsent }}</div></div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:18px 20px;border-top:3px solid #d97706"><div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b">Total late</div><div style="font:600 28px 'IBM Plex Mono',monospace;color:#0f172a;margin-top:8px">{{ sumLate }}</div></div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:18px 20px;border-top:3px solid #2563eb"><div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b">Working hours</div><div style="font:600 28px 'IBM Plex Mono',monospace;color:#0f172a;margin-top:8px">{{ sumHours }}</div></div>
+        </div>
+
+        <sc-if value="{{ isTableView }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;font:600 14px 'IBM Plex Sans',sans-serif;color:#0f172a">{{ periodLabel }} · daily record</div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Date</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Day</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Check-in</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Check-out</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Hours</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Status</th>
+              </tr></thead>
+              <tbody>
+              <sc-for list="{{ monthRows }}" as="r" hint-placeholder-count="10">
+                <tr style="background:{{ r.zebra }}">
+                  <td style="font:500 13px 'IBM Plex Sans',sans-serif;color:#0f172a;padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.date }}</td>
+                  <td style="font:400 13px 'IBM Plex Sans',sans-serif;color:#64748b;padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.day }}</td>
+                  <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.in }}</td>
+                  <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.out }}</td>
+                  <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.hours }}</td>
+                  <td style="padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap"><span style="display:inline-block;padding:4px 10px;border-radius:999px;background:{{ r.bg }};color:{{ r.fg }};font:600 11px 'IBM Plex Sans',sans-serif">{{ r.label }}</span></td>
+                </tr>
+              </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <sc-if value="{{ monthEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:46px 20px;text-align:center">
+            <div style="width:38px;height:38px;border-radius:10px;background:#f1f5f9;margin:0 auto"></div>
+            <div style="font:600 13.5px 'IBM Plex Sans',sans-serif;color:#334155;margin-top:14px">No records for this period</div>
+            <div style="font:400 12.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:5px">Attendance appears here once the month begins.</div>
+          </div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isCalView }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:20px 22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+            <div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#0f172a">{{ periodLabel }}</div>
+            <div style="display:flex;gap:14px;flex-wrap:wrap">
+              <sc-for list="{{ legend }}" as="l" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:7px"><div style="width:10px;height:10px;border-radius:3px;background:{{ l.color }}"></div><div style="font:400 12px 'IBM Plex Sans',sans-serif;color:#475569">{{ l.label }}</div></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-top:20px">
+            <sc-for list="{{ weekHeads }}" as="w" hint-placeholder-count="7">
+              <div style="font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;text-align:center;padding-bottom:4px">{{ w }}</div>
+            </sc-for>
+            <sc-for list="{{ calCells }}" as="c" hint-placeholder-count="35">
+              <div style="min-height:74px;border-radius:9px;background:{{ c.bg }};border:1px solid {{ c.border }};padding:8px 9px;display:flex;flex-direction:column;gap:5px">
+                <div style="font:600 12px 'IBM Plex Mono',monospace;color:{{ c.numFg }}">{{ c.day }}</div>
+                <div style="font:600 10px 'IBM Plex Sans',sans-serif;letter-spacing:.03em;color:{{ c.fg }};text-transform:uppercase">{{ c.label }}</div>
+                <div style="margin-top:auto;font:400 10.5px 'IBM Plex Mono',monospace;color:{{ c.subFg }}">{{ c.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- EMPLOYEE LEAVES -->
+      <sc-if value="{{ sLeaves }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start">
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:20px 22px">
+            <div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#0f172a">Leave balance {{ year }}</div>
+            <div style="display:flex;flex-direction:column;gap:18px;margin-top:18px">
+              <div>
+                <div style="display:flex;align-items:baseline;justify-content:space-between"><div style="font:600 12.5px 'IBM Plex Sans',sans-serif;color:#334155">Paid leave (PL)</div><div style="font:400 12px 'IBM Plex Mono',monospace;color:#64748b">{{ plUsed }} of {{ plTotal }} used</div></div>
+                <div style="height:8px;border-radius:5px;background:#f1f5f9;margin-top:9px;overflow:hidden"><div style="height:100%;border-radius:5px;background:#16a34a;width:{{ plPct }}"></div></div>
+                <div style="font:400 11.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:7px">{{ plLeft }} days remaining</div>
+              </div>
+              <div>
+                <div style="display:flex;align-items:baseline;justify-content:space-between"><div style="font:600 12.5px 'IBM Plex Sans',sans-serif;color:#334155">Sick leave (SL)</div><div style="font:400 12px 'IBM Plex Mono',monospace;color:#64748b">{{ slUsed }} of {{ slTotal }} used</div></div>
+                <div style="height:8px;border-radius:5px;background:#f1f5f9;margin-top:9px;overflow:hidden"><div style="height:100%;border-radius:5px;background:#2563eb;width:{{ slPct }}"></div></div>
+                <div style="font:400 11.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:7px">{{ slLeft }} days remaining</div>
+              </div>
+            </div>
+            <div style="margin-top:20px;padding:16px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a">
+              <div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#b45309">Leave deduction</div>
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-top:12px">
+                <div><div style="font:600 24px 'IBM Plex Mono',monospace;color:#92400e">{{ unpaidUsed }}</div><div style="font:400 11.5px 'IBM Plex Sans',sans-serif;color:#b45309;margin-top:3px">unpaid days</div></div>
+                <div style="text-align:right"><div style="font:600 24px 'IBM Plex Mono',monospace;color:#92400e">{{ deductAmount }}</div><div style="font:400 11.5px 'IBM Plex Sans',sans-serif;color:#b45309;margin-top:3px">at {{ dayRate }}/day</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:20px 22px">
+            <div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#0f172a">Apply for leave</div>
+            <p style="margin:6px 0 16px;font:400 12.5px/1.5 'IBM Plex Sans',sans-serif;color:#64748b">Unpaid leave is deducted from salary at the standard day rate.</p>
+            <sc-if value="{{ hasLeaveErrors }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:11px 13px;border:1px solid #fecaca;background:#fef2f2;border-radius:8px;margin-bottom:14px">
+              <sc-for list="{{ leaveErrors }}" as="e" hint-placeholder-count="1">
+                <div style="font:500 12.5px/1.55 'IBM Plex Sans',sans-serif;color:#b91c1c">· {{ e }}</div>
+              </sc-for>
+            </div>
+            </sc-if>
+            <div style="display:flex;flex-direction:column;gap:13px">
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#334155">Leave type</span>
+                <select name="leaveType" onChange="{{ onField }}" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:400 13.5px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+                  <option value="PAID">PAID</option>
+                  <option value="SICK">SICK</option>
+                  <option value="UNPAID">UNPAID</option>
+                </select>
+              </label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <label style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#334155">Start date</span>
+                  <input type="date" name="start" onChange="{{ onField }}" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font:400 13.5px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#334155">End date</span>
+                  <input type="date" name="end" onChange="{{ onField }}" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font:400 13.5px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+                </label>
+              </div>
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#334155">Reason</span>
+                <textarea name="reason" onChange="{{ onField }}" rows="4" placeholder="Give HR enough context to approve quickly" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font:400 13.5px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none;resize:vertical" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)"></textarea>
+              </label>
+              <button type="button" onClick="{{ applyLeave }}" style="padding:11px 18px;border:0;border-radius:8px;background:#2563eb;color:#fff;font:600 13.5px 'IBM Plex Sans',sans-serif;cursor:pointer;transition:background .15s" style-hover="background:#1e40af">Submit request</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;font:600 14px 'IBM Plex Sans',sans-serif;color:#0f172a">My leave requests</div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Dates</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Type</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Days</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0">Reason</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Status</th>
+                <th style="text-align:right;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Action</th>
+              </tr></thead>
+              <tbody>
+              <sc-for list="{{ myLeaveRows }}" as="r" hint-placeholder-count="4">
+                <tr style="background:{{ r.zebra }}">
+                  <td style="font:500 13px 'IBM Plex Sans',sans-serif;color:#0f172a;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.dates }}</td>
+                  <td style="padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap"><span style="font:600 11.5px 'IBM Plex Mono',monospace;color:#334155">{{ r.type }}</span></td>
+                  <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.days }}</td>
+                  <td style="font:400 13px/1.45 'IBM Plex Sans',sans-serif;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;max-width:320px">{{ r.reason }}</td>
+                  <td style="padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap"><span style="display:inline-block;padding:4px 10px;border-radius:999px;background:{{ r.bg }};color:{{ r.fg }};font:600 11px 'IBM Plex Sans',sans-serif">{{ r.label }}</span></td>
+                  <td style="padding:13px 20px;border-bottom:1px solid #f1f5f9;text-align:right;white-space:nowrap">
+                    <button type="button" onClick="{{ r.onCancel }}" disabled="{{ r.cancelDisabled }}" style="padding:7px 13px;border:1px solid {{ r.cancelBorder }};border-radius:7px;background:#fff;color:{{ r.cancelFg }};font:600 12px 'IBM Plex Sans',sans-serif;cursor:{{ r.cancelCursor }}" style-hover="background:#fef2f2">Cancel</button>
+                  </td>
+                </tr>
+              </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <sc-if value="{{ myLeavesEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:46px 20px;text-align:center">
+            <div style="font:600 13.5px 'IBM Plex Sans',sans-serif;color:#334155">No leave requests yet</div>
+            <div style="font:400 12.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:5px">Submit the form above and it will show up here for HR review.</div>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- HR DASHBOARD -->
+      <sc-if value="{{ sHrDash }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:14px">
+          <sc-for list="{{ hrStats }}" as="s" hint-placeholder-count="5">
+            <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:18px 20px;border-top:3px solid {{ s.color }}">
+              <div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b">{{ s.label }}</div>
+              <div style="font:600 29px 'IBM Plex Mono',monospace;color:#0f172a;margin-top:8px">{{ s.value }}</div>
+              <div style="font:400 11.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:4px">{{ s.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid #f1f5f9">
+            <div><div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#0f172a">Today's attendance</div><div style="font:400 12px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:2px">{{ todayLong }} · click a column header to sort</div></div>
+            <a href="#" onClick="{{ goHrReport }}" style="font:600 12.5px 'IBM Plex Sans',sans-serif">Monthly report</a>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr>
+                <sc-for list="{{ todayHeads }}" as="h" hint-placeholder-count="7">
+                  <th onClick="{{ h.onClick }}" style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap;cursor:pointer;user-select:none" style-hover="color:#2563eb">{{ h.label }}{{ h.arrow }}</th>
+                </sc-for>
+              </tr></thead>
+              <tbody>
+              <sc-for list="{{ hrTodayRows }}" as="r" hint-placeholder-count="8">
+                <tr style="background:{{ r.zebra }}">
+                  <td style="font:500 13px 'IBM Plex Sans',sans-serif;color:#0f172a;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.name }}</td>
+                  <td style="font:400 12.5px 'IBM Plex Mono',monospace;color:#64748b;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.id }}</td>
+                  <td style="font:400 13px 'IBM Plex Sans',sans-serif;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.dept }}</td>
+                  <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.in }}</td>
+                  <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.out }}</td>
+                  <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.hours }}</td>
+                  <td style="padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap"><span style="display:inline-block;padding:4px 10px;border-radius:999px;background:{{ r.bg }};color:{{ r.fg }};font:600 11px 'IBM Plex Sans',sans-serif">{{ r.label }}</span></td>
+                </tr>
+              </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid #f1f5f9">
+            <div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#0f172a">Pending leave requests</div>
+            <div style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#b45309;background:#fef3c7;padding:4px 10px;border-radius:999px">{{ pendingCount }} awaiting</div>
+          </div>
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ hrPendingRows }}" as="r" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid #f1f5f9">
+                <div style="width:34px;height:34px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font:600 12px 'IBM Plex Sans',sans-serif;color:#475569;flex:none">{{ r.initials }}</div>
+                <div style="min-width:180px">
+                  <div style="font:600 13.5px 'IBM Plex Sans',sans-serif;color:#0f172a">{{ r.name }}</div>
+                  <div style="font:400 12px 'IBM Plex Mono',monospace;color:#64748b;margin-top:2px">{{ r.id }} · {{ r.dept }}</div>
+                </div>
+                <div style="min-width:150px">
+                  <div style="font:600 12.5px 'IBM Plex Mono',monospace;color:#334155">{{ r.type }} · {{ r.days }} day(s)</div>
+                  <div style="font:400 12px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:2px">{{ r.dates }}</div>
+                </div>
+                <div style="flex:1;min-width:220px;font:400 12.5px/1.5 'IBM Plex Sans',sans-serif;color:#475569;text-wrap:pretty">{{ r.reason }}</div>
+                <div style="display:flex;gap:8px;margin-left:auto">
+                  <button type="button" onClick="{{ r.onApprove }}" style="padding:9px 16px;border:0;border-radius:8px;background:#16a34a;color:#fff;font:600 12.5px 'IBM Plex Sans',sans-serif;cursor:pointer;transition:filter .15s" style-hover="filter:brightness(.92)">Approve</button>
+                  <button type="button" onClick="{{ r.onReject }}" style="padding:9px 16px;border:0;border-radius:8px;background:#dc2626;color:#fff;font:600 12.5px 'IBM Plex Sans',sans-serif;cursor:pointer;transition:filter .15s" style-hover="filter:brightness(.92)">Reject</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ noPending }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:46px 20px;text-align:center">
+            <div style="font:600 13.5px 'IBM Plex Sans',sans-serif;color:#334155">Nothing pending</div>
+            <div style="font:400 12.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:5px">Every leave request has been actioned.</div>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- HR EMPLOYEES -->
+      <sc-if value="{{ sHrEmp }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:14px 18px">
+          <input name="q" onChange="{{ onFilter }}" placeholder="Search by name or employee ID" style="flex:1;min-width:220px;padding:10px 13px;border:1px solid #cbd5e1;border-radius:8px;font:400 13.5px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)">
+          <select name="dept" onChange="{{ onFilter }}" value="{{ dept }}" style="padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:500 13px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none">
+            <option value="ALL">All departments</option>
+            <option value="IT">IT</option><option value="HR">HR</option><option value="Sales">Sales</option><option value="Finance">Finance</option><option value="Operations">Operations</option>
+          </select>
+          <div style="font:400 12.5px 'IBM Plex Sans',sans-serif;color:#64748b">{{ empCount }} shown</div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);overflow:hidden">
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr>
+                <sc-for list="{{ empHeads }}" as="h" hint-placeholder-count="4">
+                  <th onClick="{{ h.onClick }}" style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap;cursor:pointer;user-select:none" style-hover="color:#2563eb">{{ h.label }}{{ h.arrow }}</th>
+                </sc-for>
+                <th style="text-align:right;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Actions</th>
+              </tr></thead>
+              <tbody>
+              <sc-for list="{{ hrEmpRows }}" as="r" hint-placeholder-count="10">
+                <tr style="background:{{ r.zebra }}">
+                  <td style="font:400 12.5px 'IBM Plex Mono',monospace;color:#64748b;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.id }}</td>
+                  <td style="padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <div style="width:30px;height:30px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font:600 11px 'IBM Plex Sans',sans-serif;color:#475569;flex:none">{{ r.initials }}</div>
+                      <div><div style="font:600 13px 'IBM Plex Sans',sans-serif;color:#0f172a">{{ r.name }}</div><div style="font:400 11.5px 'IBM Plex Sans',sans-serif;color:#64748b">{{ r.email }}</div></div>
+                    </div>
+                  </td>
+                  <td style="font:400 13px 'IBM Plex Sans',sans-serif;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.dept }}</td>
+                  <td style="padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap"><span style="display:inline-block;padding:4px 10px;border-radius:6px;background:{{ r.roleBg }};color:{{ r.roleFg }};font:600 11px 'IBM Plex Mono',monospace">{{ r.role }}</span></td>
+                  <td style="padding:13px 20px;border-bottom:1px solid #f1f5f9;text-align:right;white-space:nowrap">
+                    <button type="button" onClick="{{ r.onView }}" style="padding:8px 14px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#1e40af;font:600 12px 'IBM Plex Sans',sans-serif;cursor:pointer;transition:all .15s" style-hover="background:#eff6ff;border-color:#93c5fd">View attendance</button>
+                  </td>
+                </tr>
+              </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <sc-if value="{{ empEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:46px 20px;text-align:center">
+            <div style="font:600 13.5px 'IBM Plex Sans',sans-serif;color:#334155">No employees match that search</div>
+            <div style="font:400 12.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:5px">Try a different name, ID or department.</div>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- HR SINGLE EMPLOYEE ATTENDANCE -->
+      <sc-if value="{{ sHrEmpAtt }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:18px 20px">
+          <div style="width:44px;height:44px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font:600 15px 'IBM Plex Sans',sans-serif;color:#1e40af;flex:none">{{ viewInitials }}</div>
+          <div>
+            <div style="font:600 16px 'IBM Plex Sans',sans-serif;color:#0f172a">{{ viewName }}</div>
+            <div style="font:400 12.5px 'IBM Plex Mono',monospace;color:#64748b;margin-top:3px">{{ viewId }} · {{ viewDept }} · {{ viewEmail }}</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <select name="month" onChange="{{ onFilter }}" value="{{ month }}" style="padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:500 13px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none">
+              <option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
+            </select>
+            <button type="button" onClick="{{ goHrEmployees }}" style="padding:9px 15px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#334155;font:600 12.5px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="background:#f1f5f9">Back to list</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px">
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:18px 20px;border-top:3px solid #16a34a"><div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b">Present</div><div style="font:600 28px 'IBM Plex Mono',monospace;color:#0f172a;margin-top:8px">{{ vSumPresent }}</div></div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:18px 20px;border-top:3px solid #dc2626"><div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b">Absent</div><div style="font:600 28px 'IBM Plex Mono',monospace;color:#0f172a;margin-top:8px">{{ vSumAbsent }}</div></div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:18px 20px;border-top:3px solid #d97706"><div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b">Late</div><div style="font:600 28px 'IBM Plex Mono',monospace;color:#0f172a;margin-top:8px">{{ vSumLate }}</div></div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:18px 20px;border-top:3px solid #2563eb"><div style="font:600 11px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b">Working hours</div><div style="font:600 28px 'IBM Plex Mono',monospace;color:#0f172a;margin-top:8px">{{ vSumHours }}</div></div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;font:600 14px 'IBM Plex Sans',sans-serif;color:#0f172a">{{ periodLabel }} · daily record</div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Date</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Day</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Check-in</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Check-out</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Hours</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Status</th>
+              </tr></thead>
+              <tbody>
+              <sc-for list="{{ viewRows }}" as="r" hint-placeholder-count="10">
+                <tr style="background:{{ r.zebra }}">
+                  <td style="font:500 13px 'IBM Plex Sans',sans-serif;color:#0f172a;padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.date }}</td>
+                  <td style="font:400 13px 'IBM Plex Sans',sans-serif;color:#64748b;padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.day }}</td>
+                  <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.in }}</td>
+                  <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.out }}</td>
+                  <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.hours }}</td>
+                  <td style="padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap"><span style="display:inline-block;padding:4px 10px;border-radius:999px;background:{{ r.bg }};color:{{ r.fg }};font:600 11px 'IBM Plex Sans',sans-serif">{{ r.label }}</span></td>
+                </tr>
+              </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- HR LEAVES -->
+      <sc-if value="{{ sHrLeaves }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:14px 18px">
+          <div style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155;margin-right:4px">Filter</div>
+          <sc-for list="{{ leaveTabs }}" as="t" hint-placeholder-count="4">
+            <div onClick="{{ t.onClick }}" style="padding:8px 15px;border-radius:999px;cursor:pointer;font:600 12.5px 'IBM Plex Sans',sans-serif;background:{{ t.bg }};color:{{ t.fg }};border:1px solid {{ t.border }};transition:all .15s">{{ t.label }} <span style="font-family:'IBM Plex Mono',monospace;opacity:.7">{{ t.count }}</span></div>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);overflow:hidden">
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Employee</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Type</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Dates</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Days</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0">Reason</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Status</th>
+                <th style="text-align:right;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Actions</th>
+              </tr></thead>
+              <tbody>
+              <sc-for list="{{ hrLeaveRows }}" as="r" hint-placeholder-count="6">
+                <tr style="background:{{ r.zebra }}">
+                  <td style="padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">
+                    <div style="font:600 13px 'IBM Plex Sans',sans-serif;color:#0f172a">{{ r.name }}</div>
+                    <div style="font:400 11.5px 'IBM Plex Mono',monospace;color:#64748b;margin-top:2px">{{ r.id }} · {{ r.dept }}</div>
+                  </td>
+                  <td style="padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap"><span style="font:600 11.5px 'IBM Plex Mono',monospace;color:#334155">{{ r.type }}</span></td>
+                  <td style="font:400 13px 'IBM Plex Sans',sans-serif;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.dates }}</td>
+                  <td style="font:400 13px 'IBM Plex Mono',monospace;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.days }}</td>
+                  <td style="font:400 13px/1.45 'IBM Plex Sans',sans-serif;color:#475569;padding:13px 20px;border-bottom:1px solid #f1f5f9;max-width:300px">{{ r.reason }}</td>
+                  <td style="padding:13px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap"><span style="display:inline-block;padding:4px 10px;border-radius:999px;background:{{ r.bg }};color:{{ r.fg }};font:600 11px 'IBM Plex Sans',sans-serif">{{ r.label }}</span></td>
+                  <td style="padding:13px 20px;border-bottom:1px solid #f1f5f9;text-align:right;white-space:nowrap">
+                    <div style="display:inline-flex;gap:8px;justify-content:flex-end">
+                      <button type="button" onClick="{{ r.onApprove }}" disabled="{{ r.actDisabled }}" style="padding:8px 14px;border:0;border-radius:7px;background:{{ r.appBg }};color:{{ r.appFg }};font:600 12px 'IBM Plex Sans',sans-serif;cursor:{{ r.actCursor }};transition:filter .15s" style-hover="filter:brightness(.92)">Approve</button>
+                      <button type="button" onClick="{{ r.onReject }}" disabled="{{ r.actDisabled }}" style="padding:8px 14px;border:0;border-radius:7px;background:{{ r.rejBg }};color:{{ r.rejFg }};font:600 12px 'IBM Plex Sans',sans-serif;cursor:{{ r.actCursor }};transition:filter .15s" style-hover="filter:brightness(.92)">Reject</button>
+                    </div>
+                  </td>
+                </tr>
+              </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <sc-if value="{{ hrLeavesEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:46px 20px;text-align:center">
+            <div style="font:600 13.5px 'IBM Plex Sans',sans-serif;color:#334155">No requests in this view</div>
+            <div style="font:400 12.5px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:5px">Switch the filter to see other statuses.</div>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- HR REPORT -->
+      <sc-if value="{{ sHrReport }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);padding:14px 18px">
+          <div style="font:600 12px 'IBM Plex Sans',sans-serif;color:#334155">Report period</div>
+          <select name="month" onChange="{{ onFilter }}" value="{{ month }}" style="padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:500 13px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none">
+            <option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
+          </select>
+          <select name="year" onChange="{{ onFilter }}" value="{{ year }}" style="padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:500 13px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none">
+            <option value="2025">2025</option><option value="2026">2026</option>
+          </select>
+          <select name="dept" onChange="{{ onFilter }}" value="{{ dept }}" style="padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:500 13px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none">
+            <option value="ALL">All departments</option>
+            <option value="IT">IT</option><option value="HR">HR</option><option value="Sales">Sales</option><option value="Finance">Finance</option><option value="Operations">Operations</option>
+          </select>
+          <button type="button" onClick="{{ exportCsv }}" style="margin-left:auto;padding:10px 17px;border:0;border-radius:8px;background:#1e293b;color:#fff;font:600 12.5px 'IBM Plex Sans',sans-serif;cursor:pointer;transition:background .15s" style-hover="background:#0f172a">Export CSV</button>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.06);overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div><div style="font:600 14px 'IBM Plex Sans',sans-serif;color:#0f172a">Monthly attendance report</div><div style="font:400 12px 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:2px">{{ periodLabel }} · {{ workingDays }} working days · {{ reportCount }} employees</div></div>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Employee</th>
+                <th style="text-align:left;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Dept</th>
+                <th style="text-align:right;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Present</th>
+                <th style="text-align:right;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Absent</th>
+                <th style="text-align:right;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Late</th>
+                <th style="text-align:right;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Half day</th>
+                <th style="text-align:right;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">On leave</th>
+                <th style="text-align:right;font:600 10.5px 'IBM Plex Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#64748b;padding:11px 20px;border-bottom:1px solid #e2e8f0;white-space:nowrap">Working hours</th>
+              </tr></thead>
+              <tbody>
+              <sc-for list="{{ reportRows }}" as="r" hint-placeholder-count="10">
+                <tr style="background:{{ r.zebra }}">
+                  <td style="padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap"><div style="font:600 13px 'IBM Plex Sans',sans-serif;color:#0f172a">{{ r.name }}</div><div style="font:400 11.5px 'IBM Plex Mono',monospace;color:#64748b;margin-top:2px">{{ r.id }}</div></td>
+                  <td style="font:400 13px 'IBM Plex Sans',sans-serif;color:#475569;padding:12px 20px;border-bottom:1px solid #f1f5f9;white-space:nowrap">{{ r.dept }}</td>
+                  <td style="font:500 13px 'IBM Plex Mono',monospace;color:#15803d;padding:12px 20px;border-bottom:1px solid #f1f5f9;text-align:right">{{ r.present }}</td>
+                  <td style="font:500 13px 'IBM Plex Mono',monospace;color:#b91c1c;padding:12px 20px;border-bottom:1px solid #f1f5f9;text-align:right">{{ r.absent }}</td>
+                  <td style="font:500 13px 'IBM Plex Mono',monospace;color:#b45309;padding:12px 20px;border-bottom:1px solid #f1f5f9;text-align:right">{{ r.late }}</td>
+                  <td style="font:500 13px 'IBM Plex Mono',monospace;color:#c2410c;padding:12px 20px;border-bottom:1px solid #f1f5f9;text-align:right">{{ r.half }}</td>
+                  <td style="font:500 13px 'IBM Plex Mono',monospace;color:#1d4ed8;padding:12px 20px;border-bottom:1px solid #f1f5f9;text-align:right">{{ r.leave }}</td>
+                  <td style="font:600 13px 'IBM Plex Mono',monospace;color:#0f172a;padding:12px 20px;border-bottom:1px solid #f1f5f9;text-align:right">{{ r.hours }}</td>
+                </tr>
+              </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+    </main>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ rejectOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:24px;z-index:60">
+  <div style="width:100%;max-width:456px;background:#fff;border-radius:14px;box-shadow:0 24px 48px rgba(15,23,42,.28);padding:24px 26px">
+    <div style="font:600 17px 'IBM Plex Sans',sans-serif;color:#0f172a">Reject leave request</div>
+    <div style="font:400 13px/1.5 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:6px">{{ rejectName }} · {{ rejectMeta }}</div>
+    <label style="display:flex;flex-direction:column;gap:7px;margin-top:18px">
+      <span style="font:600 11.5px 'IBM Plex Sans',sans-serif;color:#334155">Reason for rejection</span>
+      <textarea name="rejectReason" onChange="{{ onField }}" rows="3" placeholder="Shared with the employee" style="width:100%;padding:11px 13px;border:1px solid #cbd5e1;border-radius:8px;font:400 13.5px 'IBM Plex Sans',sans-serif;color:#0f172a;outline:none;resize:vertical" style-focus="border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)"></textarea>
+    </label>
+    <sc-if value="{{ rejectError }}" hint-placeholder-val="{{ false }}">
+    <div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#b91c1c;margin-top:9px">{{ rejectError }}</div>
+    </sc-if>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+      <button type="button" onClick="{{ closeReject }}" style="padding:10px 17px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#334155;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer" style-hover="background:#f1f5f9">Cancel</button>
+      <button type="button" onClick="{{ confirmReject }}" style="padding:10px 17px;border:0;border-radius:8px;background:#dc2626;color:#fff;font:600 13px 'IBM Plex Sans',sans-serif;cursor:pointer;transition:filter .15s" style-hover="filter:brightness(.92)">Reject request</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;background:rgba(241,245,249,.72);display:flex;align-items:center;justify-content:center;z-index:80">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+    <div style="width:34px;height:34px;border-radius:50%;border:3px solid #cbd5e1;border-top-color:#2563eb;animation:atspin .7s linear infinite"></div>
+    <div style="font:500 12.5px 'IBM Plex Sans',sans-serif;color:#475569">{{ loadingLabel }}</div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ toastOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;right:22px;bottom:22px;z-index:90;animation:attoast .22s ease-out">
+  <div style="display:flex;align-items:flex-start;gap:11px;min-width:280px;max-width:380px;padding:14px 16px;border-radius:10px;background:#fff;border:1px solid #e2e8f0;border-left:4px solid {{ toastAccent }};box-shadow:0 12px 28px rgba(15,23,42,.16)">
+    <div style="min-width:0">
+      <div style="font:600 13px 'IBM Plex Sans',sans-serif;color:#0f172a">{{ toastTitle }}</div>
+      <div style="font:400 12.5px/1.5 'IBM Plex Sans',sans-serif;color:#64748b;margin-top:3px;text-wrap:pretty">{{ toastBody }}</div>
+    </div>
+    <div onClick="{{ closeToast }}" style="margin-left:auto;font:600 15px 'IBM Plex Sans',sans-serif;color:#94a3b8;cursor:pointer;line-height:1;padding:2px 4px">×</div>
+  </div>
+</div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;login&quot;,&quot;register&quot;,&quot;employee-dashboard&quot;,&quot;employee-attendance&quot;,&quot;employee-leaves&quot;,&quot;hr-dashboard&quot;,&quot;hr-employees&quot;,&quot;hr-leaves&quot;,&quot;hr-attendance-report&quot;],&quot;default&quot;:&quot;login&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;zebra&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Tables&quot;}}">
+class Component extends DCLogic {
+  EMP = [
+    {id:'EMP001',fn:'Priya',ln:'Menon',dept:'IT',role:'EMPLOYEE'},
+    {id:'EMP002',fn:'Rahul',ln:'Iyer',dept:'Sales',role:'EMPLOYEE'},
+    {id:'EMP003',fn:'Neha',ln:'Rao',dept:'HR',role:'HR'},
+    {id:'EMP004',fn:'Arjun',ln:'Nair',dept:'Finance',role:'EMPLOYEE'},
+    {id:'EMP005',fn:'Sneha',ln:'Kulkarni',dept:'IT',role:'EMPLOYEE'},
+    {id:'EMP006',fn:'Vikram',ln:'Desai',dept:'Operations',role:'EMPLOYEE'},
+    {id:'EMP007',fn:'Ananya',ln:'Bose',dept:'Sales',role:'EMPLOYEE'},
+    {id:'EMP008',fn:'Karthik',ln:'Menon',dept:'IT',role:'EMPLOYEE'},
+    {id:'EMP009',fn:'Meera',ln:'Joshi',dept:'Finance',role:'EMPLOYEE'},
+    {id:'EMP010',fn:'Rohan',ln:'Gupta',dept:'Operations',role:'EMPLOYEE'},
+    {id:'EMP011',fn:'Divya',ln:'Shetty',dept:'HR',role:'EMPLOYEE'},
+    {id:'EMP012',fn:'Aditya',ln:'Verma',dept:'Sales',role:'EMPLOYEE'}
+  ];
+  SM = {
+    PRESENT:{l:'Present',bg:'#dcfce7',fg:'#15803d',c:'#16a34a'},
+    ABSENT:{l:'Absent',bg:'#fee2e2',fg:'#b91c1c',c:'#dc2626'},
+    LATE:{l:'Late',bg:'#fef3c7',fg:'#b45309',c:'#d97706'},
+    HALF_DAY:{l:'Half Day',bg:'#ffedd5',fg:'#c2410c',c:'#ea580c'},
+    ON_LEAVE:{l:'On Leave',bg:'#dbeafe',fg:'#1d4ed8',c:'#2563eb'},
+    WEEKEND:{l:'Weekend',bg:'#f8fafc',fg:'#94a3b8',c:'#cbd5e1'},
+    NOT_MARKED:{l:'Not Marked',bg:'#f1f5f9',fg:'#475569',c:'#94a3b8'},
+    PENDING:{l:'Pending',bg:'#fef3c7',fg:'#b45309',c:'#d97706'},
+    APPROVED:{l:'Approved',bg:'#dcfce7',fg:'#15803d',c:'#16a34a'},
+    REJECTED:{l:'Rejected',bg:'#fee2e2',fg:'#b91c1c',c:'#dc2626'},
+    CANCELLED:{l:'Cancelled',bg:'#f1f5f9',fg:'#64748b',c:'#94a3b8'}
+  };
+  MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  SEED_LEAVES = [
+    {id:1,emp:'EMP001',type:'PAID',start:'2026-08-12',end:'2026-08-14',days:3,reason:'Family function in Pune',status:'APPROVED'},
+    {id:2,emp:'EMP001',type:'SICK',start:'2026-08-26',end:'2026-08-26',days:1,reason:'Viral fever, doctor advised rest',status:'APPROVED'},
+    {id:3,emp:'EMP001',type:'UNPAID',start:'2026-07-08',end:'2026-07-09',days:2,reason:'Personal work, bank documentation',status:'APPROVED'},
+    {id:4,emp:'EMP001',type:'PAID',start:'2026-09-18',end:'2026-09-19',days:2,reason:'Travelling for a wedding in Hyderabad',status:'PENDING'},
+    {id:5,emp:'EMP002',type:'SICK',start:'2026-09-02',end:'2026-09-03',days:2,reason:'Recovering from dengue, hospital discharge summary attached',status:'PENDING'},
+    {id:6,emp:'EMP005',type:'PAID',start:'2026-09-04',end:'2026-09-08',days:5,reason:'Planned trip to Coorg with family',status:'PENDING'},
+    {id:7,emp:'EMP009',type:'UNPAID',start:'2026-09-10',end:'2026-09-10',days:1,reason:'House shifting, movers scheduled',status:'PENDING'},
+    {id:8,emp:'EMP006',type:'PAID',start:'2026-09-22',end:'2026-09-26',days:5,reason:'Annual leave, already discussed with reporting manager',status:'PENDING'},
+    {id:9,emp:'EMP007',type:'PAID',start:'2026-08-20',end:'2026-08-21',days:2,reason:'Sister\u2019s convocation in Chennai',status:'REJECTED',rejectReason:'Month-end closing, full team required'},
+    {id:10,emp:'EMP012',type:'SICK',start:'2026-08-29',end:'2026-08-29',days:1,reason:'Migraine',status:'APPROVED'}
+  ];
+  RATE = 1850;
+  PL_TOTAL = 12;
+  SL_TOTAL = 8;
+
+  state = (function(){
+    var n = new Date();
+    return {screen:'login',user:null,sidebar:true,loading:false,loadingLabel:'',toast:null,
+      loginError:'',regErrors:[],regOk:'',leaveErrors:[],rejectError:'',
+      today:null,leaves:null,month:n.getMonth()+1,year:n.getFullYear(),
+      view:'table',dept:'ALL',q:'',leaveFilter:'ALL',sortKey:'name',sortDir:1,reject:null,viewEmp:null};
+  })();
+
+  vals = {email:'',password:'',firstName:'',lastName:'',regEmail:'',regPassword:'',confirmPassword:'',role:'EMPLOYEE',department:'IT',leaveType:'PAID',start:'',end:'',reason:'',rejectReason:''};
+
+  componentDidMount(){
+    try {
+      var raw = localStorage.getItem('attendtrack.v1');
+      if (raw) {
+        var d = JSON.parse(raw);
+        if (d && d.user) {
+          var s = this.props.startScreen;
+          this.setState({user:d.user, today:d.today||null, leaves:d.leaves||null,
+            screen: (s && s !== 'login') ? s : (d.user.role === 'HR' ? 'hr-dashboard' : 'employee-dashboard')});
+          return;
+        }
+      }
+    } catch(e){}
+    var s2 = this.props.startScreen;
+    if (s2 && s2 !== 'login') {
+      var isHr = s2.indexOf('hr-') === 0;
+      this.setState({user:this.mkUser(isHr ? this.EMP[2] : this.EMP[0]), screen:s2});
+    }
+  }
+
+  mkUser(e){ return {id:e.id,fn:e.fn,ln:e.ln,dept:e.dept,role:e.role,email:this.mail(e),token:'demo.'+e.id+'.'+Date.now()}; }
+  mail(e){ return (e.fn+'.'+e.ln).toLowerCase()+'@attendtrack.io'; }
+  save(){ try { localStorage.setItem('attendtrack.v1', JSON.stringify({user:this.state.user,today:this.state.today,leaves:this.state.leaves})); } catch(e){} }
+  set(p){ this.setState(p, () => this.save()); }
+  leaves(){ return this.state.leaves || this.SEED_LEAVES; }
+  emp(id){ for (var i=0;i<this.EMP.length;i++) if (this.EMP[i].id===id) return this.EMP[i]; return this.EMP[0]; }
+  idx(id){ for (var i=0;i<this.EMP.length;i++) if (this.EMP[i].id===id) return i; return 0; }
+  nameOf(e){ return e.fn+' '+e.ln; }
+  ini(e){ return (e.fn[0]+e.ln[0]).toUpperCase(); }
+  toast(kind,title,body){
+    var accent = kind==='error' ? '#dc2626' : (kind==='warn' ? '#d97706' : '#16a34a');
+    this.setState({toast:{accent:accent,title:title,body:body}});
+    clearTimeout(this._tt);
+    this._tt = setTimeout(()=>this.setState({toast:null}), 4200);
+  }
+  busy(label, done){
+    this.setState({loading:true,loadingLabel:label});
+    setTimeout(()=>{ this.setState({loading:false}); done(); }, 520);
+  }
+
+  seed(n){ var x = Math.sin(n*12.9898)*43758.5453; return x - Math.floor(x); }
+  statusFor(i,y,m,d){
+    var w = new Date(y,m-1,d).getDay();
+    if (w===0||w===6) return 'WEEKEND';
+    var r = this.seed(i*7.31 + d*3.17 + m*11.7 + (y-2000)*1.9);
+    if (r<0.70) return 'PRESENT';
+    if (r<0.80) return 'LATE';
+    if (r<0.86) return 'HALF_DAY';
+    if (r<0.93) return 'ON_LEAVE';
+    return 'ABSENT';
+  }
+  rec(i,y,m,d){
+    var st = this.statusFor(i,y,m,d), r = this.seed(i*2.7 + d*5.71 + m*3.3), inM=null, outM=null;
+    if (st==='PRESENT'){ inM = 540 + Math.floor(r*22); outM = 1085 + Math.floor(r*32); }
+    else if (st==='LATE'){ inM = 601 + Math.floor(r*40); outM = 1120 + Math.floor(r*28); }
+    else if (st==='HALF_DAY'){ inM = 545; outM = 810; }
+    return {status:st, inM:inM, outM:outM, mins: inM==null ? 0 : outM-inM};
+  }
+  fmtT(m){ if (m==null) return '—'; var h=Math.floor(m/60), mm=m%60, ap=h>=12?'PM':'AM', hh=h%12; if(hh===0)hh=12; return hh+':'+String(mm).padStart(2,'0')+' '+ap; }
+  fmtH(mins){ if(!mins) return '—'; return Math.floor(mins/60)+'h '+String(mins%60).padStart(2,'0')+'m'; }
+  fmtD(y,m,d){ return String(d).padStart(2,'0')+' '+this.MONTHS[m-1].slice(0,3)+' '+y; }
+  dayName(y,m,d){ return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(y,m-1,d).getDay()]; }
+  inr(n){ return '\u20b9' + n.toLocaleString('en-IN'); }
+  parseD(s){ var p=s.split('-'); return new Date(+p[0],+p[1]-1,+p[2]); }
+  fmtRange(a,b){
+    var A=this.parseD(a), B=this.parseD(b);
+    var one = this.fmtD(A.getFullYear(),A.getMonth()+1,A.getDate());
+    if (a===b) return one;
+    return one+' — '+this.fmtD(B.getFullYear(),B.getMonth()+1,B.getDate());
+  }
+  monthDays(y,m){ return new Date(y,m,0).getDate(); }
+  lastDayShown(y,m){
+    var n = new Date();
+    if (y===n.getFullYear() && m===n.getMonth()+1) return n.getDate();
+    if (y>n.getFullYear() || (y===n.getFullYear() && m>n.getMonth()+1)) return 0;
+    return this.monthDays(y,m);
+  }
+  summary(i,y,m){
+    var last = this.lastDayShown(y,m), o = {present:0,absent:0,late:0,half:0,leave:0,mins:0,working:0};
+    for (var d=1; d<=last; d++){
+      var r = this.rec(i,y,m,d);
+      if (r.status==='WEEKEND') continue;
+      o.working++;
+      o.mins += r.mins;
+      if (r.status==='PRESENT') o.present++;
+      else if (r.status==='ABSENT') o.absent++;
+      else if (r.status==='LATE'){ o.late++; o.present++; }
+      else if (r.status==='HALF_DAY') o.half++;
+      else if (r.status==='ON_LEAVE') o.leave++;
+    }
+    return o;
+  }
+  rowsFor(i,y,m,limit){
+    var last = this.lastDayShown(y,m), out = [], z=0;
+    for (var d=last; d>=1; d--){
+      var r = this.rec(i,y,m,d), s = this.SM[r.status];
+      out.push({date:this.fmtD(y,m,d), day:this.dayName(y,m,d), in:this.fmtT(r.inM), out:this.fmtT(r.outM),
+        hours:this.fmtH(r.mins), label:s.l, bg:s.bg, fg:s.fg, zebra: (z++%2 && this.props.zebra !== false) ? '#fcfdfe' : '#ffffff'});
+      if (limit && out.length>=limit) break;
+    }
+    return out;
+  }
+
+  onField = (e) => { this.vals[e.target.name] = e.target.value; };
+  onFilter = (e) => {
+    var n = e.target.name, v = e.target.value;
+    if (n==='month'||n==='year') v = +v;
+    this.setState({[n]:v});
+  };
+  go = (s) => () => this.setState({screen:s, leaveErrors:[]});
+  goLogin = (e) => { if(e) e.preventDefault(); this.setState({screen:'login',regErrors:[],regOk:''}); };
+  goRegister = (e) => { if(e) e.preventDefault(); this.setState({screen:'register',loginError:''}); };
+  goAttendance = (e) => { if(e) e.preventDefault(); this.setState({screen:'employee-attendance'}); };
+  goHrReport = (e) => { if(e) e.preventDefault(); this.setState({screen:'hr-attendance-report'}); };
+  goHrEmployees = () => this.setState({screen:'hr-employees',viewEmp:null});
+  toggleSidebar = () => this.setState({sidebar:!this.state.sidebar});
+  logout = () => {
+    try { localStorage.removeItem('attendtrack.v1'); } catch(e){}
+    this.setState({user:null,screen:'login',today:null,leaves:null,loginError:''});
+    this.toast('ok','Signed out','Your session token was cleared from this browser.');
+  };
+
+  doLogin = () => {
+    var em = (this.vals.email||'').trim().toLowerCase(), pw = this.vals.password||'';
+    if (!em) return this.setState({loginError:'Enter your work email address.'});
+    if (em.indexOf('@')<0 || em.indexOf('.')<0) return this.setState({loginError:'That email address does not look valid.'});
+    if (pw.length<6) return this.setState({loginError:'Password must be at least 6 characters.'});
+    var found = null;
+    for (var i=0;i<this.EMP.length;i++) if (this.mail(this.EMP[i])===em) found = this.EMP[i];
+    if (!found) return this.setState({loginError:'No account found for '+em+'. Try a demo account below or register.'});
+    this.setState({loginError:''});
+    this.busy('Signing in…', () => {
+      var u = this.mkUser(found);
+      this.set({user:u, screen: u.role==='HR' ? 'hr-dashboard' : 'employee-dashboard'});
+      this.toast('ok','Welcome back, '+u.fn, u.role==='HR' ? 'HR console loaded.' : 'Remember to check in for today.');
+    });
+  };
+
+  doRegister = () => {
+    var v = this.vals, err = [];
+    if (!v.firstName.trim()) err.push('First name is required.');
+    if (!v.lastName.trim()) err.push('Last name is required.');
+    if (!v.regEmail.trim() || v.regEmail.indexOf('@')<0) err.push('A valid work email is required.');
+    if ((v.regPassword||'').length<8) err.push('Password must be at least 8 characters.');
+    if (v.regPassword !== v.confirmPassword) err.push('Password and confirmation do not match.');
+    if (err.length) return this.setState({regErrors:err, regOk:''});
+    this.setState({regErrors:[]});
+    this.busy('Creating account…', () => {
+      this.setState({regOk:'Account created for '+v.firstName+' '+v.lastName+' ('+v.role+', '+v.department+'). HR will verify before your first check-in.'});
+      this.toast('ok','Registration submitted','Sign in with your new credentials.');
+    });
+  };
+
+  checkIn = () => {
+    if (this.state.today && this.state.today.inM!=null) return;
+    var n = new Date(), mins = n.getHours()*60 + n.getMinutes();
+    var st = mins > 570 ? 'LATE' : 'PRESENT';
+    this.busy('Recording check-in…', () => {
+      this.set({today:{status:st,inM:mins,outM:null}});
+      this.toast(st==='LATE'?'warn':'ok', st==='LATE'?'Checked in late':'Checked in', 'Marked at '+this.fmtT(mins)+(st==='LATE'?' — after the 09:30 grace period.':'. Have a good day.'));
+    });
+  };
+  checkOut = () => {
+    var t = this.state.today;
+    if (!t || t.inM==null || t.outM!=null) return;
+    var n = new Date(), mins = n.getHours()*60 + n.getMinutes();
+    if (mins <= t.inM) mins = t.inM + 1;
+    this.busy('Recording check-out…', () => {
+      this.set({today:{status:t.status,inM:t.inM,outM:mins}});
+      this.toast('ok','Checked out','Worked '+this.fmtH(mins-t.inM)+' today.');
+    });
+  };
+
+  applyLeave = () => {
+    var v = this.vals, err = [];
+    if (!v.start) err.push('Start date is required.');
+    if (!v.end) err.push('End date is required.');
+    if (v.start && v.end && this.parseD(v.end) < this.parseD(v.start)) err.push('End date cannot be before the start date.');
+    if (!(v.reason||'').trim() || v.reason.trim().length<8) err.push('Give a reason of at least 8 characters.');
+    if (err.length) return this.setState({leaveErrors:err});
+    var days = Math.round((this.parseD(v.end)-this.parseD(v.start))/86400000)+1;
+    var bal = this.balance();
+    if (v.leaveType==='PAID' && days > bal.plLeft) err.push('Only '+bal.plLeft+' paid leave day(s) left. Apply as UNPAID instead.');
+    if (v.leaveType==='SICK' && days > bal.slLeft) err.push('Only '+bal.slLeft+' sick leave day(s) left.');
+    if (err.length) return this.setState({leaveErrors:err});
+    this.setState({leaveErrors:[]});
+    var list = this.leaves().slice();
+    var id = 1; for (var i=0;i<list.length;i++) if (list[i].id>=id) id = list[i].id+1;
+    list.unshift({id:id,emp:this.state.user.id,type:v.leaveType,start:v.start,end:v.end,days:days,reason:v.reason.trim(),status:'PENDING'});
+    this.busy('Submitting request…', () => {
+      this.set({leaves:list});
+      this.toast('ok','Leave request submitted', days+' day(s) of '+v.leaveType.toLowerCase()+' leave sent to HR for approval.');
+    });
+  };
+  cancelLeave = (id) => () => {
+    var list = this.leaves().map(l => l.id===id ? Object.assign({},l,{status:'CANCELLED'}) : l);
+    this.set({leaves:list});
+    this.toast('warn','Request cancelled','HR will no longer see this request as pending.');
+  };
+  approve = (id) => () => {
+    var list = this.leaves().map(l => l.id===id ? Object.assign({},l,{status:'APPROVED'}) : l);
+    var l = this.leaves().filter(x => x.id===id)[0];
+    this.set({leaves:list});
+    this.toast('ok','Leave approved', this.nameOf(this.emp(l.emp))+' · '+l.days+' day(s) '+l.type.toLowerCase()+' leave.');
+  };
+  openReject = (id) => () => { this.vals.rejectReason=''; this.setState({reject:id, rejectError:''}); };
+  closeReject = () => this.setState({reject:null, rejectError:''});
+  confirmReject = () => {
+    var r = (this.vals.rejectReason||'').trim();
+    if (r.length<5) return this.setState({rejectError:'Give the employee a reason (at least 5 characters).'});
+    var id = this.state.reject;
+    var l = this.leaves().filter(x => x.id===id)[0];
+    var list = this.leaves().map(x => x.id===id ? Object.assign({},x,{status:'REJECTED',rejectReason:r}) : x);
+    this.set({leaves:list, reject:null, rejectError:''});
+    this.toast('error','Leave rejected', this.nameOf(this.emp(l.emp))+' has been notified.');
+  };
+  viewEmployee = (id) => () => this.setState({viewEmp:id, screen:'hr-employee-attendance'});
+  sortBy = (k) => () => this.setState({sortKey:k, sortDir: this.state.sortKey===k ? -this.state.sortDir : 1});
+  setTable = () => this.setState({view:'table'});
+  setCal = () => this.setState({view:'calendar'});
+  closeToast = () => this.setState({toast:null});
+
+  balance(){
+    var u = this.state.user;
+    if (!u) return {plUsed:0,slUsed:0,unpaid:0,plLeft:this.PL_TOTAL,slLeft:this.SL_TOTAL};
+    var pl=0, sl=0, up=0;
+    this.leaves().forEach(l => {
+      if (l.emp!==u.id || l.status!=='APPROVED') return;
+      if (l.type==='PAID') pl += l.days;
+      else if (l.type==='SICK') sl += l.days;
+      else up += l.days;
+    });
+    return {plUsed:pl, slUsed:sl, unpaid:up, plLeft:Math.max(0,this.PL_TOTAL-pl), slLeft:Math.max(0,this.SL_TOTAL-sl)};
+  }
+
+  exportCsv = () => {
+    var rows = this.reportData();
+    var lines = ['Employee ID,Name,Department,Present,Absent,Late,Half Day,On Leave,Working Hours'];
+    rows.forEach(r => lines.push([r.id,'"'+r.name+'"',r.dept,r.present,r.absent,r.late,r.half,r.leave,'"'+r.hours+'"'].join(',')));
+    var blob = new Blob([lines.join('\n')], {type:'text/csv'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'attendance-'+this.state.year+'-'+String(this.state.month).padStart(2,'0')+'.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    this.toast('ok','Report exported', rows.length+' employee rows written to '+a.download+'.');
+  };
+
+  reportData(){
+    var st = this.state, out = [], z = 0;
+    this.EMP.forEach((e,i) => {
+      if (st.dept!=='ALL' && e.dept!==st.dept) return;
+      var s = this.summary(i, st.year, st.month);
+      out.push({id:e.id, name:this.nameOf(e), dept:e.dept, present:s.present, absent:s.absent, late:s.late,
+        half:s.half, leave:s.leave, hours:this.fmtH(s.mins),
+        zebra: (z++%2 && this.props.zebra !== false) ? '#fcfdfe' : '#ffffff'});
+    });
+    return out;
+  }
+
+  renderVals(){
+    var st = this.state, u = st.user, S = this.SM;
+    var screen = u ? st.screen : (st.screen==='register' ? 'register' : 'login');
+    var isAuth = !u, n = new Date();
+    var todayLong = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][n.getDay()]+', '+this.fmtD(n.getFullYear(),n.getMonth()+1,n.getDate());
+    var v = {
+      isAuth:isAuth, isApp:!isAuth, isLogin:screen==='login', isRegister:screen==='register',
+      loginError:st.loginError, loginBtn:'Sign in', regErrors:st.regErrors, hasRegErrors:st.regErrors.length>0, regOk:st.regOk,
+      onField:this.onField, onFilter:this.onFilter, doLogin:this.doLogin, doRegister:this.doRegister,
+      goLogin:this.goLogin, goRegister:this.goRegister, goAttendance:this.goAttendance, goHrReport:this.goHrReport,
+      goHrEmployees:this.goHrEmployees, logout:this.logout, toggleSidebar:this.toggleSidebar, sidebar:st.sidebar,
+      loading:st.loading, loadingLabel:st.loadingLabel || 'Working…',
+      toastOpen:!!st.toast, toastAccent:st.toast?st.toast.accent:'#16a34a', toastTitle:st.toast?st.toast.title:'', toastBody:st.toast?st.toast.body:'', closeToast:this.closeToast,
+      month:st.month, year:st.year, dept:st.dept, todayLong:todayLong,
+      periodLabel:this.MONTHS[st.month-1]+' '+st.year,
+      sDash:screen==='employee-dashboard', sAtt:screen==='employee-attendance', sLeaves:screen==='employee-leaves',
+      sHrDash:screen==='hr-dashboard', sHrEmp:screen==='hr-employees', sHrLeaves:screen==='hr-leaves',
+      sHrReport:screen==='hr-attendance-report', sHrEmpAtt:screen==='hr-employee-attendance',
+      isTableView:st.view==='table', isCalView:st.view==='calendar',
+      tableTabBg:st.view==='table'?'#ffffff':'transparent', tableTabFg:st.view==='table'?'#0f172a':'#64748b',
+      calTabBg:st.view==='calendar'?'#ffffff':'transparent', calTabFg:st.view==='calendar'?'#0f172a':'#64748b',
+      setTable:this.setTable, setCal:this.setCal,
+      leaveErrors:st.leaveErrors, hasLeaveErrors:st.leaveErrors.length>0, applyLeave:this.applyLeave,
+      rejectOpen:st.reject!=null, closeReject:this.closeReject, confirmReject:this.confirmReject, rejectError:st.rejectError,
+      rejectName:'', rejectMeta:'', dayRate:this.inr(this.RATE),
+      weekHeads:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      legend:[{label:'Present',color:S.PRESENT.c},{label:'Late',color:S.LATE.c},{label:'Half day',color:S.HALF_DAY.c},{label:'On leave',color:S.ON_LEAVE.c},{label:'Absent',color:S.ABSENT.c}]
+    };
+    if (st.reject!=null) {
+      var rl = this.leaves().filter(x => x.id===st.reject)[0];
+      if (rl) { v.rejectName = this.nameOf(this.emp(rl.emp)); v.rejectMeta = rl.type+' · '+rl.days+' day(s) · '+this.fmtRange(rl.start,rl.end); }
+    }
+    if (!u) return v;
+
+    var me = this.emp(u.id), mi = this.idx(u.id);
+    var titles = {
+      'employee-dashboard':['Dashboard','Your attendance and leave at a glance'],
+      'employee-attendance':['Attendance History','Daily record, monthly totals and calendar view'],
+      'employee-leaves':['Leave Management','Balance, applications and deductions'],
+      'hr-dashboard':['HR Dashboard','Company-wide attendance for today'],
+      'hr-employees':['Employees','All active employees and their records'],
+      'hr-leaves':['Leave Management','Review, approve and reject requests'],
+      'hr-attendance-report':['Reports','Monthly attendance report and CSV export'],
+      'hr-employee-attendance':['Employee Attendance','Individual monthly record']
+    };
+    var t = titles[screen] || ['Dashboard',''];
+    v.pageTitle = t[0]; v.pageSub = t[1];
+    v.userName = this.nameOf(me); v.userEmpId = me.id; v.userDept = me.dept; v.initials = this.ini(me);
+    v.firstName = me.fn; v.roleLabel = u.role==='HR' ? 'HR Console' : 'Employee';
+    var hr = u.role==='HR';
+    var items = hr
+      ? [['hr-dashboard','Dashboard'],['hr-employees','Employees'],['hr-leaves','Leave Management'],['hr-attendance-report','Reports']]
+      : [['employee-dashboard','Dashboard'],['employee-attendance','Attendance History'],['employee-leaves','Leave Management']];
+    v.navItems = items.map(it => {
+      var active = screen===it[0] || (it[0]==='hr-employees' && screen==='hr-employee-attendance');
+      return {label:it[1], go:this.go(it[0]), bg:active?'#2563eb':'transparent', fg:active?'#ffffff':'#cbd5e1',
+        dot:active?'#ffffff':'#475569', weight:active?'600':'500'};
+    });
+
+    var bal = this.balance();
+    v.plUsed = bal.plUsed; v.plTotal = this.PL_TOTAL; v.plLeft = bal.plLeft; v.plPct = Math.round(bal.plUsed/this.PL_TOTAL*100)+'%';
+    v.slUsed = bal.slUsed; v.slTotal = this.SL_TOTAL; v.slLeft = bal.slLeft; v.slPct = Math.round(bal.slUsed/this.SL_TOTAL*100)+'%';
+    v.unpaidUsed = bal.unpaid; v.deductAmount = this.inr(bal.unpaid*this.RATE);
+
+    var td = st.today;
+    var tstat = td ? td.status : 'NOT_MARKED';
+    var sm = S[tstat];
+    v.todayStatus = sm.l.toUpperCase(); v.todayBg = sm.bg; v.todayFg = sm.fg;
+    v.inTime = this.fmtT(td?td.inM:null); v.outTime = this.fmtT(td?td.outM:null);
+    v.workHours = td && td.inM!=null && td.outM!=null ? this.fmtH(td.outM-td.inM) : '—';
+    v.todayNote = !td ? 'You have not checked in yet. Check in before 09:30 to avoid a late mark.'
+      : (td.outM==null ? 'Checked in at '+this.fmtT(td.inM)+'. Check out when you finish for the day.'
+        : 'Day closed at '+this.fmtT(td.outM)+'. Nothing else to do today.');
+    var canIn = !td, canOut = !!td && td.inM!=null && td.outM==null;
+    v.inDisabled = !canIn; v.outDisabled = !canOut;
+    v.inBg = canIn?'#16a34a':'#f1f5f9'; v.inFg = canIn?'#ffffff':'#94a3b8'; v.inCursor = canIn?'pointer':'not-allowed';
+    v.outBg = canOut?'#dc2626':'#f1f5f9'; v.outFg = canOut?'#ffffff':'#94a3b8'; v.outCursor = canOut?'pointer':'not-allowed';
+    var hh = n.getHours();
+    v.greeting = hh<12 ? 'Good morning' : (hh<17 ? 'Good afternoon' : 'Good evening');
+    v.shiftLine = me.dept+' · standard shift 09:00 to 18:00 · reporting to HR at AttendTrack';
+    v.checkIn = this.checkIn; v.checkOut = this.checkOut;
+
+    v.recentRows = this.rowsFor(mi, n.getFullYear(), n.getMonth()+1, 5);
+    if (v.recentRows.length < 5) {
+      var pm = n.getMonth()===0 ? 12 : n.getMonth(), py = n.getMonth()===0 ? n.getFullYear()-1 : n.getFullYear();
+      v.recentRows = v.recentRows.concat(this.rowsFor(mi, py, pm, 5 - v.recentRows.length));
+    }
+
+    var s = this.summary(mi, st.year, st.month);
+    v.sumPresent = s.present; v.sumAbsent = s.absent; v.sumLate = s.late; v.sumHours = this.fmtH(s.mins);
+    v.monthRows = this.rowsFor(mi, st.year, st.month, 0);
+    v.monthEmpty = v.monthRows.length===0;
+    v.workingDays = s.working;
+
+    var days = this.monthDays(st.year, st.month), first = new Date(st.year, st.month-1, 1).getDay();
+    var lead = (first+6)%7, cells = [], last = this.lastDayShown(st.year, st.month);
+    for (var k=0;k<lead;k++) cells.push({day:'', label:'', sub:'', bg:'transparent', border:'transparent', fg:'#94a3b8', numFg:'#94a3b8', subFg:'#94a3b8'});
+    for (var d=1; d<=days; d++){
+      if (d>last) { cells.push({day:String(d), label:'—', sub:'', bg:'#ffffff', border:'#f1f5f9', fg:'#cbd5e1', numFg:'#cbd5e1', subFg:'#cbd5e1'}); continue; }
+      var r = this.rec(mi, st.year, st.month, d), c = S[r.status];
+      cells.push({day:String(d), label:c.l, sub:r.inM==null?'':this.fmtT(r.inM), bg:c.bg, border:c.bg, fg:c.fg, numFg:c.fg, subFg:c.fg});
+    }
+    v.calCells = cells;
+
+    var mine = this.leaves().filter(l => l.emp===u.id), z=0;
+    v.myLeaveRows = mine.map(l => {
+      var c = S[l.status], can = l.status==='PENDING';
+      return {dates:this.fmtRange(l.start,l.end), type:l.type, days:l.days, reason:l.reason, label:c.l, bg:c.bg, fg:c.fg,
+        onCancel:can?this.cancelLeave(l.id):(()=>{}), cancelDisabled:!can, cancelBorder:can?'#fecaca':'#e2e8f0',
+        cancelFg:can?'#b91c1c':'#cbd5e1', cancelCursor:can?'pointer':'not-allowed',
+        zebra:(z++%2 && this.props.zebra !== false)?'#fcfdfe':'#ffffff'};
+    });
+    v.myLeavesEmpty = v.myLeaveRows.length===0;
+
+    var todayY = n.getFullYear(), todayM = n.getMonth()+1, todayD = n.getDate();
+    var rows = this.EMP.map((e,i) => {
+      var r, stt;
+      if (e.id===u.id && td) { r = {inM:td.inM,outM:td.outM,mins:td.outM!=null?td.outM-td.inM:0}; stt = td.status; }
+      else { r = this.rec(i, todayY, todayM, todayD); stt = r.status==='WEEKEND' ? 'PRESENT' : r.status; if (r.status==='WEEKEND') r = this.rec(i, todayY, todayM, todayD>1?todayD-1:2); stt = r.status==='WEEKEND'?'ON_LEAVE':r.status; }
+      var c = S[stt];
+      return {name:this.nameOf(e), id:e.id, dept:e.dept, in:this.fmtT(r.inM), out:this.fmtT(r.outM), hours:this.fmtH(r.mins),
+        label:c.l, bg:c.bg, fg:c.fg, _st:stt, _mins:r.mins, _in:r.inM==null?99999:r.inM};
+    });
+    var keyMap = {name:'name', id:'id', dept:'dept', in:'_in', out:'_in', hours:'_mins', status:'_st'};
+    var sk = keyMap[st.sortKey] || 'name', dir = st.sortDir;
+    rows.sort((a,b) => { var A=a[sk], B=b[sk]; if (typeof A==='number') return (A-B)*dir; return String(A).localeCompare(String(B))*dir; });
+    var zz=0;
+    v.hrTodayRows = rows.map(r => Object.assign({}, r, {zebra:(zz++%2 && this.props.zebra !== false)?'#fcfdfe':'#ffffff'}));
+    v.todayHeads = [['name','Employee'],['id','ID'],['dept','Department'],['in','Check-in'],['out','Check-out'],['hours','Hours'],['status','Status']].map(h => ({
+      label:h[1], arrow: st.sortKey===h[0] ? (dir>0?' ↑':' ↓') : '', onClick:this.sortBy(h[0])
+    }));
+
+    var present=0, absent=0, onLeave=0, late=0;
+    rows.forEach(r => { if (r._st==='PRESENT'){present++;} else if (r._st==='LATE'){present++;late++;} else if (r._st==='HALF_DAY'){present++;} else if (r._st==='ON_LEAVE'){onLeave++;} else absent++; });
+    v.hrStats = [
+      {label:'Total employees', value:this.EMP.length, sub:'across 5 departments', color:'#2563eb'},
+      {label:'Present today', value:present, sub:'includes late and half day', color:'#16a34a'},
+      {label:'Absent today', value:absent, sub:'no check-in recorded', color:'#dc2626'},
+      {label:'On leave', value:onLeave, sub:'approved leave', color:'#1e40af'},
+      {label:'Late today', value:late, sub:'after 09:30 grace', color:'#d97706'}
+    ];
+
+    var pend = this.leaves().filter(l => l.status==='PENDING');
+    v.pendingCount = pend.length; v.noPending = pend.length===0;
+    v.hrPendingRows = pend.map(l => {
+      var e = this.emp(l.emp);
+      return {name:this.nameOf(e), id:e.id, dept:e.dept, initials:this.ini(e), type:l.type, days:l.days,
+        dates:this.fmtRange(l.start,l.end), reason:l.reason, onApprove:this.approve(l.id), onReject:this.openReject(l.id)};
+    });
+
+    var q = (st.q||'').toLowerCase(), ze=0;
+    v.hrEmpRows = this.EMP.filter(e => (st.dept==='ALL'||e.dept===st.dept) && (!q || (this.nameOf(e)+' '+e.id).toLowerCase().indexOf(q)>=0)).map(e => ({
+      id:e.id, name:this.nameOf(e), email:this.mail(e), dept:e.dept, role:e.role, initials:this.ini(e),
+      roleBg:e.role==='HR'?'#ede9fe':'#f1f5f9', roleFg:e.role==='HR'?'#6d28d9':'#475569',
+      onView:this.viewEmployee(e.id), zebra:(ze++%2 && this.props.zebra !== false)?'#fcfdfe':'#ffffff'
+    }));
+    v.empCount = v.hrEmpRows.length; v.empEmpty = v.hrEmpRows.length===0;
+    v.empHeads = [['id','EMP ID'],['name','Name'],['dept','Department'],['status','Role']].map(h => ({
+      label:h[1], arrow: st.sortKey===h[0] ? (dir>0?' ↑':' ↓') : '', onClick:this.sortBy(h[0])
+    }));
+
+    var counts = {ALL:0,PENDING:0,APPROVED:0,REJECTED:0};
+    this.leaves().forEach(l => { counts.ALL++; if (counts[l.status]!=null) counts[l.status]++; });
+    v.leaveTabs = [['ALL','All'],['PENDING','Pending'],['APPROVED','Approved'],['REJECTED','Rejected']].map(tb => {
+      var on = st.leaveFilter===tb[0];
+      return {label:tb[1], count:counts[tb[0]]||0, onClick:() => this.setState({leaveFilter:tb[0]}),
+        bg:on?'#2563eb':'#ffffff', fg:on?'#ffffff':'#334155', border:on?'#2563eb':'#e2e8f0'};
+    });
+    var zl=0;
+    v.hrLeaveRows = this.leaves().filter(l => st.leaveFilter==='ALL' || l.status===st.leaveFilter).map(l => {
+      var e = this.emp(l.emp), c = S[l.status], act = l.status==='PENDING';
+      return {name:this.nameOf(e), id:e.id, dept:e.dept, type:l.type, dates:this.fmtRange(l.start,l.end), days:l.days,
+        reason:l.status==='REJECTED'&&l.rejectReason ? l.reason+' — rejected: '+l.rejectReason : l.reason,
+        label:c.l, bg:c.bg, fg:c.fg, onApprove:act?this.approve(l.id):(()=>{}), onReject:act?this.openReject(l.id):(()=>{}),
+        actDisabled:!act, actCursor:act?'pointer':'not-allowed',
+        appBg:act?'#16a34a':'#f1f5f9', appFg:act?'#ffffff':'#cbd5e1',
+        rejBg:act?'#dc2626':'#f1f5f9', rejFg:act?'#ffffff':'#cbd5e1',
+        zebra:(zl++%2 && this.props.zebra !== false)?'#fcfdfe':'#ffffff'};
+    });
+    v.hrLeavesEmpty = v.hrLeaveRows.length===0;
+
+    v.reportRows = this.reportData();
+    v.reportCount = v.reportRows.length;
+    v.exportCsv = this.exportCsv;
+
+    if (st.viewEmp) {
+      var ve = this.emp(st.viewEmp), vi = this.idx(st.viewEmp), vs = this.summary(vi, st.year, st.month);
+      v.viewName = this.nameOf(ve); v.viewId = ve.id; v.viewDept = ve.dept; v.viewEmail = this.mail(ve); v.viewInitials = this.ini(ve);
+      v.vSumPresent = vs.present; v.vSumAbsent = vs.absent; v.vSumLate = vs.late; v.vSumHours = this.fmtH(vs.mins);
+      v.viewRows = this.rowsFor(vi, st.year, st.month, 0);
+    }
+    return v;
+  }
+}
+</script>
+</body>
+</html>

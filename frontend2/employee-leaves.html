@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leave Management · AttendTrack</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">A</div>
+      <div class="brand-name">AttendTrack</div>
+    </div>
+    <div class="sidebar-role" id="roleLabel">Employee</div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="dashboard" href="employee-dashboard.html"><span class="nav-dot"></span>Dashboard</a>
+      <a class="nav-item" data-nav="attendance" href="employee-attendance.html"><span class="nav-dot"></span>Attendance History</a>
+      <a class="nav-item" data-nav="leaves" href="employee-leaves.html"><span class="nav-dot"></span>Leave Management</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-row">
+        <div class="avatar" data-init>–</div>
+        <div class="sidebar-user-meta">
+          <div class="sidebar-user-name" data-user-name>–</div>
+          <div class="sidebar-user-id" data-user-id>–</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div class="topbar-title">
+        <div class="topbar-title-main" id="pageTitle">Leave Management</div>
+        <div class="topbar-title-sub" id="pageSub">Balance, applications and deductions</div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-chip-avatar" data-init>–</div>
+          <div>
+            <div class="user-chip-name" data-user-name>–</div>
+            <div class="user-chip-meta" id="tbMeta">–</div>
+          </div>
+        </div>
+        <button class="btn-logout" id="logoutBtn">Logout</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="grid grid-auto-300">
+        <div class="card card-pad">
+          <div class="card-title">Leave balance <span id="balYear"></span></div>
+          <div class="form-col" style="gap:18px;margin-top:18px">
+            <div>
+              <div class="bal-head"><div class="bal-name">Paid leave (PL)</div><div class="bal-meta" id="plMeta">– of – used</div></div>
+              <div class="progress lg"><span class="green" id="plBar" style="width:0%"></span></div>
+              <div class="bal-note" id="plNote">– days remaining</div>
+            </div>
+            <div>
+              <div class="bal-head"><div class="bal-name">Sick leave (SL)</div><div class="bal-meta" id="slMeta">– of – used</div></div>
+              <div class="progress lg"><span class="blue" id="slBar" style="width:0%"></span></div>
+              <div class="bal-note" id="slNote">– days remaining</div>
+            </div>
+          </div>
+          <div class="warn-box">
+            <div class="warn-box-title">Leave deduction</div>
+            <div class="warn-box-row">
+              <div><div class="warn-box-num" id="unpaidDays">–</div><div class="warn-box-cap">unpaid days</div></div>
+              <div style="text-align:right"><div class="warn-box-num" id="deductAmount">–</div><div class="warn-box-cap" id="rateCap">this month</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-pad">
+          <div class="card-title">Apply for leave</div>
+          <p class="card-sub" style="margin:6px 0 16px">Unpaid leave is deducted from salary at the standard day rate.</p>
+          <div id="applyError" class="form-error-list" style="margin-bottom:14px" hidden>
+            <div id="applyErrorItems"></div>
+          </div>
+          <form id="applyForm" class="form-col tight">
+            <label class="field">
+              <span class="field-label sm">Leave type</span>
+              <select class="select sm" id="leaveType">
+                <option value="PAID">PAID</option>
+                <option value="SICK">SICK</option>
+                <option value="UNPAID">UNPAID</option>
+              </select>
+            </label>
+            <div class="form-row-2" style="gap:10px">
+              <label class="field">
+                <span class="field-label sm">Start date</span>
+                <input class="input sm" type="date" id="startDate">
+              </label>
+              <label class="field">
+                <span class="field-label sm">End date</span>
+                <input class="input sm" type="date" id="endDate">
+              </label>
+            </div>
+            <label class="field">
+              <span class="field-label sm">Reason</span>
+              <textarea class="textarea sm" id="reason" rows="4" placeholder="Give HR enough context to approve quickly"></textarea>
+            </label>
+            <button type="submit" class="btn btn-primary" id="applyBtn" style="font-size:13.5px;padding:11px 18px">Submit request</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">My leave requests</div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Type</th><th>Start</th><th>End</th><th>Days</th><th>Reason</th><th>Status</th><th>Remarks</th><th class="right">Action</th>
+            </tr></thead>
+            <tbody id="leaveBody">
+              <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:34px 20px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="emptyBox" hidden></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="overlay-inner"><div class="overlay-spin"></div><div class="overlay-label">Working…</div></div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/utils.js"></script>
+<script>
+  checkAuth();
+  initShell("leaves", "Leave Management", "Balance, applications and deductions");
+
+  document.getElementById("balYear").textContent = getCurrentYear();
+  document.getElementById("startDate").value = getTodayDate();
+  document.getElementById("endDate").value = getTodayDate();
+
+  let balanceCache = {};
+
+  function renderBalance(b) {
+    balanceCache = b || {};
+    const plTotal = num(pick(b, ["paidLeaveTotal", "plTotal", "totalPaidLeave"], 12));
+    const plUsed = num(pick(b, ["paidLeaveUsed", "plUsed", "usedPaidLeave"], 0));
+    const plLeft = num(pick(b, ["paidLeaveRemaining", "paidLeaveBalance", "plRemaining", "plLeft"], plTotal - plUsed));
+    const slTotal = num(pick(b, ["sickLeaveTotal", "slTotal", "totalSickLeave"], 8));
+    const slUsed = num(pick(b, ["sickLeaveUsed", "slUsed", "usedSickLeave"], 0));
+    const slLeft = num(pick(b, ["sickLeaveRemaining", "sickLeaveBalance", "slRemaining", "slLeft"], slTotal - slUsed));
+
+    document.getElementById("plMeta").textContent = `${plUsed} of ${plTotal} used`;
+    document.getElementById("plBar").style.width = (plTotal ? Math.min(100, plUsed / plTotal * 100) : 0) + "%";
+    document.getElementById("plNote").textContent = `${plLeft} days remaining`;
+
+    document.getElementById("slMeta").textContent = `${slUsed} of ${slTotal} used`;
+    document.getElementById("slBar").style.width = (slTotal ? Math.min(100, slUsed / slTotal * 100) : 0) + "%";
+    document.getElementById("slNote").textContent = `${slLeft} days remaining`;
+
+    return { plLeft, slLeft };
+  }
+
+  function renderDeduction(d) {
+    const unpaid = num(pick(d, ["unpaidDays", "unpaidLeaveDays", "days"], 0));
+    const amount = pick(d, ["deductionAmount", "amount", "totalDeduction"], 0);
+    const rate = pick(d, ["perDayRate", "dayRate", "ratePerDay"]);
+    document.getElementById("unpaidDays").textContent = unpaid;
+    document.getElementById("deductAmount").textContent = formatMoney(amount);
+    document.getElementById("rateCap").textContent = rate ? `at ${formatMoney(rate)}/day` : "this month";
+  }
+
+  function renderLeaves(rows) {
+    const body = document.getElementById("leaveBody");
+    const emptyBox = document.getElementById("emptyBox");
+    if (!Array.isArray(rows) || rows.length === 0) {
+      body.innerHTML = "";
+      emptyBox.hidden = false;
+      emptyBox.innerHTML = emptyState("No leave requests yet", "Submit the form and it will show up here for HR review.");
+      return;
+    }
+    emptyBox.hidden = true;
+    body.innerHTML = rows.map(r => {
+      const id = pick(r, ["id", "leaveId", "requestId"]);
+      const start = pick(r, ["startDate", "start", "fromDate"]);
+      const end = pick(r, ["endDate", "end", "toDate"]);
+      const status = pick(r, ["status"], "PENDING");
+      const days = pick(r, ["days", "numberOfDays", "totalDays"], dayCount(start, end));
+      const canCancel = status === "PENDING";
+      const remarks = pick(r, ["remarks", "rejectionReason", "rejectReason", "hrRemarks"], "");
+      const remarksHtml = (status === "REJECTED" && remarks)
+        ? `<span class="text-danger small">❌ ${escapeHtml(remarks)}</span>`
+        : (remarks ? escapeHtml(remarks) : "-");
+      return `<tr>
+        <td class="mono">${escapeHtml(pick(r, ["leaveType", "type"], "-"))}</td>
+        <td class="strong">${formatDateLong(start)}</td>
+        <td class="strong">${formatDateLong(end)}</td>
+        <td class="mono">${days}</td>
+        <td class="wrap">${escapeHtml(pick(r, ["reason"], "-"))}</td>
+        <td>${getStatusBadge(status)}</td>
+        <td class="wrap">${remarksHtml}</td>
+        <td class="right">
+          <button class="btn btn-xs btn-outline" data-cancel="${id}" ${canCancel ? "" : "disabled"}
+            style="${canCancel ? "color:var(--red-dark);border-color:#fecaca" : ""}">Cancel</button>
+        </td>
+      </tr>`;
+    }).join("");
+
+    body.querySelectorAll("[data-cancel]:not([disabled])").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("Cancel this leave request?")) return;
+        setOverlay(true, "Cancelling…");
+        try {
+          await cancelLeave(btn.dataset.cancel);
+          showToast("Request cancelled.", "warning");
+          await load();
+        } catch (err) {
+          showToast(errMsg(err, "Could not cancel the request."), "danger");
+        } finally { setOverlay(false); }
+      });
+    });
+  }
+
+  async function load() {
+    try { renderBalance(await getLeaveBalance(getCurrentYear())); }
+    catch (err) { showToast(errMsg(err, "Could not load leave balance."), "danger"); }
+
+    try { renderDeduction(await getLeaveDeduction(getCurrentMonth(), getCurrentYear())); }
+    catch (err) { renderDeduction({}); }
+
+    try {
+      const list = await getMyLeaves();
+      renderLeaves(Array.isArray(list) ? list : pick(list, ["requests", "content", "data"], []));
+    } catch (err) {
+      document.getElementById("leaveBody").innerHTML = errorRow(8, errMsg(err, "Could not load your leave requests."));
+    }
+  }
+
+  document.getElementById("applyForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const errBox = document.getElementById("applyError");
+    const errItems = document.getElementById("applyErrorItems");
+    errBox.hidden = true;
+
+    const leaveType = document.getElementById("leaveType").value;
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+    const reason = document.getElementById("reason").value.trim();
+
+    const errs = [];
+    if (!startDate) errs.push("Start date is required.");
+    if (!endDate) errs.push("End date is required.");
+    if (startDate && endDate && new Date(endDate) < new Date(startDate)) errs.push("End date cannot be before the start date.");
+    if (reason.length < 8) errs.push("Give a reason of at least 8 characters.");
+    if (errs.length) {
+      errItems.innerHTML = errs.map(x => `<div class="e">· ${escapeHtml(x)}</div>`).join("");
+      errBox.hidden = false;
+      return;
+    }
+
+    showLoading("applyBtn", "Submitting…");
+    try {
+      await applyLeave({ leaveType, startDate, endDate, reason });
+      showToast("Leave request submitted for approval.", "success");
+      document.getElementById("reason").value = "";
+      await load();
+    } catch (err) {
+      errItems.innerHTML = `<div class="e">· ${escapeHtml(errMsg(err, "Could not submit the request."))}</div>`;
+      errBox.hidden = false;
+    } finally {
+      hideLoading("applyBtn", "Submit request");
+    }
+  });
+
+  load();
+</script>
+</body>
+</html>

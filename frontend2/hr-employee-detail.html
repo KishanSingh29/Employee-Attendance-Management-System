@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Employee Attendance · AttendTrack</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .emp-detail-head{
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);
+    padding:18px 20px;
+  }
+  .emp-detail-avatar{
+    width:44px;height:44px;border-radius:50%;background:#dbeafe;
+    display:flex;align-items:center;justify-content:center;
+    font:600 15px var(--sans);color:#1e40af;flex:none;
+  }
+  .emp-detail-name{font:600 16px var(--sans);color:var(--darker)}
+  .emp-detail-meta{font:400 12.5px var(--mono);color:var(--muted);margin-top:3px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">A</div>
+      <div class="brand-name">AttendTrack</div>
+    </div>
+    <div class="sidebar-role" id="roleLabel">HR Console</div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" data-nav="dashboard" href="hr-dashboard.html"><span class="nav-dot"></span>Dashboard</a>
+      <a class="nav-item" data-nav="employees" href="hr-employees.html"><span class="nav-dot"></span>Employees</a>
+      <a class="nav-item" data-nav="leaves" href="hr-leaves.html"><span class="nav-dot"></span>Leave Management</a>
+      <a class="nav-item" data-nav="reports" href="hr-attendance-report.html"><span class="nav-dot"></span>Reports</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-row">
+        <div class="avatar" data-init>–</div>
+        <div class="sidebar-user-meta">
+          <div class="sidebar-user-name" data-user-name>–</div>
+          <div class="sidebar-user-id" data-user-id>–</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div class="topbar-title">
+        <div class="topbar-title-main" id="pageTitle">Employee Attendance</div>
+        <div class="topbar-title-sub" id="pageSub">Individual monthly record</div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-chip-avatar" data-init>–</div>
+          <div>
+            <div class="user-chip-name" data-user-name>–</div>
+            <div class="user-chip-meta" id="tbMeta">–</div>
+          </div>
+        </div>
+        <button class="btn-logout" id="logoutBtn">Logout</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="emp-detail-head">
+        <div class="emp-detail-avatar" id="edAvatar">–</div>
+        <div>
+          <div class="emp-detail-name" id="edName">–</div>
+          <div class="emp-detail-meta" id="edMeta">–</div>
+        </div>
+        <div class="flex gap-10" style="margin-left:auto;align-items:center;flex-wrap:wrap">
+          <select id="month"></select>
+          <select id="year"></select>
+          <a class="btn btn-sm btn-outline" href="hr-employees.html">Back to list</a>
+        </div>
+      </div>
+
+      <div class="grid grid-auto-190">
+        <div class="stat top-green"><div class="section-label">Present</div><div class="stat-value" id="sPresent">–</div></div>
+        <div class="stat top-red"><div class="section-label">Absent</div><div class="stat-value" id="sAbsent">–</div></div>
+        <div class="stat top-amber"><div class="section-label">Late</div><div class="stat-value" id="sLate">–</div></div>
+        <div class="stat top-blue"><div class="section-label">Working hours</div><div class="stat-value" id="sHours">–</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title" id="periodLabel">Daily record</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Date</th><th>Day</th><th>Check-in</th><th>Check-out</th><th>Hours</th><th>Status</th>
+            </tr></thead>
+            <tbody id="tableBody">
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:34px 20px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="emptyBox" hidden></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="overlay-inner"><div class="overlay-spin"></div><div class="overlay-label">Working…</div></div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/utils.js"></script>
+<script>
+  checkAuth();
+  checkHR();
+  initShell("employees", "Employee Attendance", "Individual monthly record");
+
+  const params = new URLSearchParams(location.search);
+  const userId = params.get("userId") || "";
+  const empName = params.get("name") || "Employee";
+  const empId = params.get("empId") || "-";
+  const dept = params.get("dept") || "-";
+  const email = params.get("email") || "-";
+
+  if (!userId) {
+    showToast("No employee selected. Returning to the list…", "warning");
+    setTimeout(() => { window.location.href = "hr-employees.html"; }, 1200);
+  }
+
+  document.getElementById("edAvatar").textContent = initials(empName);
+  document.getElementById("edName").textContent = empName;
+  document.getElementById("edMeta").textContent = `${empId} · ${dept} · ${email}`;
+
+  const monthSel = document.getElementById("month");
+  const yearSel = document.getElementById("year");
+  monthSel.innerHTML = monthOptions(getCurrentMonth());
+  yearSel.innerHTML = yearOptions(getCurrentYear());
+
+  function renderSummary(rows) {
+    let present = 0, absent = 0, late = 0, hours = 0;
+    rows.forEach(r => {
+      const st = pick(r, ["status"], "");
+      const h = num(pick(r, ["workingHours", "workHours", "totalHours", "hours"]), 0);
+      hours += h;
+      if (st === "PRESENT") present++;
+      else if (st === "LATE") { present++; late++; }
+      else if (st === "HALF_DAY") present++;
+      else if (st === "ABSENT") absent++;
+    });
+    document.getElementById("sPresent").textContent = present;
+    document.getElementById("sAbsent").textContent = absent;
+    document.getElementById("sLate").textContent = late;
+    document.getElementById("sHours").textContent = formatHours(hours);
+  }
+
+  function renderTable(rows) {
+    const body = document.getElementById("tableBody");
+    const emptyBox = document.getElementById("emptyBox");
+    if (!Array.isArray(rows) || rows.length === 0) {
+      body.innerHTML = "";
+      emptyBox.hidden = false;
+      emptyBox.innerHTML = emptyState("No records for this period", "This employee has no attendance for the selected month.");
+      return;
+    }
+    emptyBox.hidden = true;
+    // newest first
+    const sorted = rows.slice().sort((a, b) =>
+      String(pick(b, ["date", "attendanceDate"], "")).localeCompare(String(pick(a, ["date", "attendanceDate"], ""))));
+    body.innerHTML = sorted.map(r => {
+      const d = pick(r, ["date", "attendanceDate"]);
+      return `<tr>
+        <td class="strong">${formatDateLong(d)}</td>
+        <td>${dayName(d)}</td>
+        <td class="mono">${formatTime(pick(r, ["checkIn", "checkInTime", "inTime"]))}</td>
+        <td class="mono">${formatTime(pick(r, ["checkOut", "checkOutTime", "outTime"]))}</td>
+        <td class="mono">${formatHours(pick(r, ["workingHours", "workHours", "totalHours", "hours"]))}</td>
+        <td>${getStatusBadge(pick(r, ["status"], "PRESENT"))}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  async function load() {
+    if (!userId) return;
+    const m = num(monthSel.value), y = num(yearSel.value);
+    document.getElementById("periodLabel").textContent = `${monthName(m)} ${y} · daily record`;
+    document.getElementById("tableBody").innerHTML =
+      `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:34px 20px">Loading…</td></tr>`;
+    setOverlay(true, "Loading attendance…");
+    try {
+      const data = await hrGetEmployeeAttendance(userId, m, y);
+      const rows = Array.isArray(data) ? data : pick(data, ["records", "content", "data"], []);
+      renderSummary(rows);
+      renderTable(rows);
+    } catch (err) {
+      renderSummary([]);
+      document.getElementById("tableBody").innerHTML = errorRow(6, errMsg(err, "Could not load this employee's attendance."));
+    } finally {
+      setOverlay(false);
+    }
+  }
+
+  monthSel.addEventListener("change", load);
+  yearSel.addEventListener("change", load);
+  load();
+</script>
+</body>
+</html>
