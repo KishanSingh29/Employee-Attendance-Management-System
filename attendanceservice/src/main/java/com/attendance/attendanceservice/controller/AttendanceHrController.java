@@ -45,6 +45,23 @@ public class AttendanceHrController {
     @Parameter(name = "date", in = ParameterIn.QUERY,
             example = "2026-09-01",
             description = "Date in yyyy-MM-dd format")
+    @ApiResponse(responseCode = "200", description = "Attendance for every employee on the given date",
+            content = @Content(schema = @Schema(example = """
+            [
+              {
+                "userId": "765a2d44-6423-47d9-a542-69e58d028a4d",
+                "employeeId": "EMP001",
+                "firstName": "Kishan",
+                "lastName": "Singh",
+                "department": "IT",
+                "date": "2026-09-01",
+                "checkIn": "09:00:00",
+                "checkOut": "18:00:00",
+                "workingHours": 9.0,
+                "status": "PRESENT"
+              }
+            ]
+            """)))
     public ResponseEntity<List<HrAttendanceRecordResponse>> allForDate(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(attendanceService.getAllForDate(date));
@@ -58,6 +75,21 @@ public class AttendanceHrController {
             example = "765a2d44-6423-47d9-a542-69e58d028a4d")
     @Parameter(name = "month", in = ParameterIn.QUERY, example = "9")
     @Parameter(name = "year", in = ParameterIn.QUERY, example = "2026")
+    @ApiResponse(responseCode = "200", description = "Employee's daily records for the month",
+            content = @Content(schema = @Schema(example = """
+            [
+              {
+                "id": 101,
+                "userId": "765a2d44-6423-47d9-a542-69e58d028a4d",
+                "date": "2026-09-01",
+                "checkIn": "09:00:00",
+                "checkOut": "18:00:00",
+                "workingHours": 9.0,
+                "status": "PRESENT",
+                "createdAt": "2026-09-01T09:00:05"
+              }
+            ]
+            """)))
     public ResponseEntity<List<AttendanceResponse>> employeeHistory(
             @PathVariable String userId,
             @RequestParam int month,
@@ -90,6 +122,25 @@ public class AttendanceHrController {
     @SecurityRequirement(name = "Bearer Auth")
     @Parameter(name = "month", in = ParameterIn.QUERY, example = "9")
     @Parameter(name = "year", in = ParameterIn.QUERY, example = "2026")
+    @ApiResponse(responseCode = "200", description = "Per-employee monthly attendance totals",
+            content = @Content(schema = @Schema(example = """
+            [
+              {
+                "userId": "765a2d44-6423-47d9-a542-69e58d028a4d",
+                "employeeId": "EMP001",
+                "firstName": "Kishan",
+                "lastName": "Singh",
+                "department": "IT",
+                "totalPresent": 20,
+                "totalAbsent": 2,
+                "totalLate": 3,
+                "totalHalfDay": 1,
+                "totalOnLeave": 1,
+                "totalWorkingHours": 176.5,
+                "averageHours": 8.4
+              }
+            ]
+            """)))
     public ResponseEntity<List<EmployeeMonthlyReportResponse>> report(
             @RequestParam int month,
             @RequestParam int year) {

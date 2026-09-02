@@ -63,7 +63,8 @@ public class AuthController {
               "email": "kishan@gmail.com",
               "password": "password123",
               "role": "EMPLOYEE",
-              "department": "IT"
+              "department": "IT",
+              "salary": 30000.0
             }
             """)))
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -122,6 +123,22 @@ public class AuthController {
     @SecurityRequirement(name = "Bearer Auth")
     @Operation(summary = "Get All Employees",
             description = "HR only. List of all registered employees.")
+    @ApiResponse(responseCode = "200", description = "List of employees",
+            content = @Content(schema = @Schema(example = """
+            [
+              {
+                "userId": "765a2d44-6423-47d9-a542-69e58d028a4d",
+                "employeeId": "EMP001",
+                "firstName": "Kishan",
+                "lastName": "Singh",
+                "email": "kishan@gmail.com",
+                "role": "EMPLOYEE",
+                "department": "IT",
+                "salary": 30000.0,
+                "createdAt": "2026-09-01T10:15:30"
+              }
+            ]
+            """)))
     public ResponseEntity<List<UserResponse>> employees() {
         return ResponseEntity.ok(authService.getAllEmployees());
     }

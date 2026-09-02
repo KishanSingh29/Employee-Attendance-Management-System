@@ -115,6 +115,21 @@ public class AttendanceController {
     @SecurityRequirement(name = "Bearer Auth")
     @Parameter(name = "month", in = ParameterIn.QUERY, example = "9")
     @Parameter(name = "year", in = ParameterIn.QUERY, example = "2026")
+    @ApiResponse(responseCode = "200", description = "Daily attendance records for the month",
+            content = @Content(schema = @Schema(example = """
+            [
+              {
+                "id": 101,
+                "userId": "765a2d44-6423-47d9-a542-69e58d028a4d",
+                "date": "2026-09-01",
+                "checkIn": "09:00:00",
+                "checkOut": "18:00:00",
+                "workingHours": 9.0,
+                "status": "PRESENT",
+                "createdAt": "2026-09-01T09:00:05"
+              }
+            ]
+            """)))
     public ResponseEntity<List<AttendanceResponse>> history(
             @RequestHeader(value = USER_ID_HEADER, required = false) String xUserId,
             @RequestParam int month,
