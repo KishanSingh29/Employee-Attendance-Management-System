@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Attendance · AttendTrack</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="sidebar" id="sidebar">
+    <div class="brand">🏢 AttendTrack</div>
+    <a href="employee-dashboard.html"><span class="nav-icon">📊</span>Dashboard</a>
+    <a href="employee-attendance.html" class="active"><span class="nav-icon">🕒</span>Attendance</a>
+    <a href="employee-leaves.html"><span class="nav-icon">🌴</span>Leaves</a>
+    <a href="#" onclick="doLogout();return false;"><span class="nav-icon">🚪</span>Logout</a>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary btn-sm sidebar-toggle" onclick="toggleSidebar()">☰</button>
+        <span class="fw-bold">🏢 AttendTrack</span>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <span class="fw-semibold" id="topName"></span>
+        <span class="badge bg-primary" id="topEmpId"></span>
+      </div>
+    </div>
+
+    <h4 class="mb-3">My Attendance</h4>
+
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-6 col-md-3">
+            <label class="form-label" for="month">Month</label>
+            <select id="month" class="form-select"></select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label" for="year">Year</label>
+            <select id="year" class="form-select"></select>
+          </div>
+          <div class="col-12 col-md-3">
+            <button id="applyFilter" class="btn btn-primary w-100">Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg">
+        <div class="card stat-card b-success h-100"><div class="card-body">
+          <div class="stat-label">Present</div><div class="stat-value" id="sPresent">-</div>
+        </div></div>
+      </div>
+      <div class="col-6 col-lg">
+        <div class="card stat-card b-danger h-100"><div class="card-body">
+          <div class="stat-label">Absent</div><div class="stat-value" id="sAbsent">-</div>
+        </div></div>
+      </div>
+      <div class="col-6 col-lg">
+        <div class="card stat-card b-warning h-100"><div class="card-body">
+          <div class="stat-label">Late</div><div class="stat-value" id="sLate">-</div>
+        </div></div>
+      </div>
+      <div class="col-6 col-lg">
+        <div class="card stat-card b-warning h-100"><div class="card-body">
+          <div class="stat-label">Half Day</div><div class="stat-value" id="sHalf">-</div>
+        </div></div>
+      </div>
+      <div class="col-12 col-lg">
+        <div class="card stat-card b-primary h-100"><div class="card-body">
+          <div class="stat-label">Total Hours</div><div class="stat-value" id="sHours">-</div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Attendance Records</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr><th>Date</th><th>Check In</th><th>Check Out</th><th>Hours</th><th>Status</th></tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr><td colspan="5" class="empty-state">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    checkAuth();
+    fillTopbar();
+
+    document.getElementById("month").innerHTML = monthOptions(getCurrentMonth());
+    document.getElementById("year").innerHTML = yearOptions(getCurrentYear());
+
+    async function loadSummary(m, y) {
+      try {
+        const s = await getAttendanceSummary(m, y);
+        if (!s) return;
+        document.getElementById("sPresent").textContent = s.totalPresent ?? 0;
+        document.getElementById("sAbsent").textContent = s.totalAbsent ?? 0;
+        document.getElementById("sLate").textContent = s.totalLate ?? 0;
+        document.getElementById("sHalf").textContent = s.totalHalfDay ?? 0;
+        document.getElementById("sHours").textContent = Number(s.totalWorkingHours ?? 0).toFixed(1);
+      } catch (err) {
+        showToast(apiError(err), "danger");
+      }
+    }
+
+    async function loadTable(m, y) {
+      const body = document.getElementById("tableBody");
+      body.innerHTML = `<tr><td colspan="5" class="empty-state">Loading...</td></tr>`;
+      try {
+        const rows = await getAttendanceHistory(m, y);
+        if (!rows || !rows.length) {
+          body.innerHTML = `<tr><td colspan="5" class="empty-state">No records for this period.</td></tr>`;
+          return;
+        }
+        rows.sort((a, b) => (a.date < b.date ? 1 : -1));
+        body.innerHTML = rows.map(r => `
+          <tr class="row-${(r.status || '').toLowerCase()}">
+            <td>${formatDate(r.date)}</td>
+            <td>${formatTime(r.checkIn)}</td>
+            <td>${formatTime(r.checkOut)}</td>
+            <td>${r.workingHours != null ? Number(r.workingHours).toFixed(2) : "-"}</td>
+            <td>${getStatusBadge(r.status)}</td>
+          </tr>`).join("");
+      } catch (err) {
+        body.innerHTML = `<tr><td colspan="5" class="empty-state">${apiError(err)}</td></tr>`;
+      }
+    }
+
+    function refresh() {
+      const m = document.getElementById("month").value;
+      const y = document.getElementById("year").value;
+      loadSummary(m, y);
+      loadTable(m, y);
+    }
+
+    document.getElementById("applyFilter").addEventListener("click", refresh);
+    document.getElementById("month").addEventListener("change", refresh);
+    document.getElementById("year").addEventListener("change", refresh);
+
+    refresh();
+  </script>
+</body>
+</html>

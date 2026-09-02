@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard · AttendTrack</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="sidebar" id="sidebar">
+    <div class="brand">🏢 AttendTrack</div>
+    <a href="employee-dashboard.html" class="active"><span class="nav-icon">📊</span>Dashboard</a>
+    <a href="employee-attendance.html"><span class="nav-icon">🕒</span>Attendance</a>
+    <a href="employee-leaves.html"><span class="nav-icon">🌴</span>Leaves</a>
+    <a href="#" onclick="doLogout();return false;"><span class="nav-icon">🚪</span>Logout</a>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary btn-sm sidebar-toggle" onclick="toggleSidebar()">☰</button>
+        <span class="fw-bold">🏢 AttendTrack</span>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <span class="fw-semibold" id="topName"></span>
+        <span class="badge bg-primary" id="topEmpId"></span>
+      </div>
+    </div>
+
+    <h4 class="mb-1" id="greeting">Welcome!</h4>
+    <p class="text-muted" id="todayDate"></p>
+
+    <!-- Check in / out -->
+    <div class="card mb-4">
+      <div class="card-body text-center py-4">
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+          <button id="checkInBtn" class="btn-checkin" disabled>Check In</button>
+          <button id="checkOutBtn" class="btn-checkout" disabled>Check Out</button>
+        </div>
+        <p class="text-muted mt-3 mb-0" id="checkHint">Loading today's status...</p>
+      </div>
+    </div>
+
+    <!-- Today stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-3">
+        <div class="card stat-card b-primary h-100"><div class="card-body">
+          <div class="stat-label">Check In</div>
+          <div class="stat-value" id="tCheckIn">-</div>
+        </div></div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card stat-card b-danger h-100"><div class="card-body">
+          <div class="stat-label">Check Out</div>
+          <div class="stat-value" id="tCheckOut">-</div>
+        </div></div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card stat-card b-success h-100"><div class="card-body">
+          <div class="stat-label">Working Hours</div>
+          <div class="stat-value" id="tHours">-</div>
+        </div></div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card stat-card b-warning h-100"><div class="card-body">
+          <div class="stat-label">Status</div>
+          <div class="stat-value" id="tStatus">-</div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- Leave balance -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="card stat-card b-info h-100"><div class="card-body">
+          <div class="stat-label">Paid Leave Remaining</div>
+          <div class="stat-value" id="plRemaining">-</div>
+          <div class="text-muted small" id="plMeta"></div>
+        </div></div>
+      </div>
+      <div class="col-md-6">
+        <div class="card stat-card b-info h-100"><div class="card-body">
+          <div class="stat-label">Sick Leave Remaining</div>
+          <div class="stat-value" id="slRemaining">-</div>
+          <div class="text-muted small" id="slMeta"></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- Recent attendance -->
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Recent Attendance — This Month</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr><th>Date</th><th>Check In</th><th>Check Out</th><th>Hours</th><th>Status</th></tr>
+            </thead>
+            <tbody id="recentBody">
+              <tr><td colspan="5" class="empty-state">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    checkAuth();
+    fillTopbar();
+    document.getElementById("greeting").textContent = `${greeting()}, ${getFirstName() || "there"}!`;
+    document.getElementById("todayDate").textContent = todayLong();
+
+    async function loadToday() {
+      try {
+        const t = await getTodayAttendance();
+        if (!t) return;
+        document.getElementById("tCheckIn").textContent = formatTime(t.checkIn);
+        document.getElementById("tCheckOut").textContent = formatTime(t.checkOut);
+        document.getElementById("tHours").textContent = t.workingHours != null ? Number(t.workingHours).toFixed(2) : "-";
+        document.getElementById("tStatus").innerHTML = t.status ? getStatusBadge(t.status) : "-";
+
+        const inBtn = document.getElementById("checkInBtn");
+        const outBtn = document.getElementById("checkOutBtn");
+        const hint = document.getElementById("checkHint");
+        const checkedIn = t.checkedIn || !!t.checkIn;
+        const checkedOut = !!t.checkOut;
+
+        inBtn.disabled = checkedIn;
+        outBtn.disabled = !checkedIn || checkedOut;
+
+        if (!checkedIn) hint.textContent = "You haven't checked in yet today.";
+        else if (!checkedOut) hint.textContent = "Checked in at " + formatTime(t.checkIn) + ". Don't forget to check out!";
+        else hint.textContent = "Attendance complete for today. 🎉";
+      } catch (err) {
+        showToast(apiError(err), "danger");
+      }
+    }
+
+    async function loadBalance() {
+      try {
+        const b = await getLeaveBalance(getCurrentYear());
+        if (!b) return;
+        document.getElementById("plRemaining").textContent = b.plRemaining;
+        document.getElementById("plMeta").textContent = `${b.plUsed} used of ${b.plTotal}`;
+        document.getElementById("slRemaining").textContent = b.slRemaining;
+        document.getElementById("slMeta").textContent = `${b.slUsed} used of ${b.slTotal}`;
+      } catch (err) {
+        document.getElementById("plMeta").textContent = apiError(err);
+      }
+    }
+
+    async function loadRecent() {
+      const body = document.getElementById("recentBody");
+      try {
+        const rows = await getAttendanceHistory(getCurrentMonth(), getCurrentYear());
+        if (!rows || !rows.length) {
+          body.innerHTML = `<tr><td colspan="5" class="empty-state">No attendance records this month.</td></tr>`;
+          return;
+        }
+        rows.sort((a, b) => (a.date < b.date ? 1 : -1));
+        body.innerHTML = rows.map(r => `
+          <tr class="row-${(r.status || '').toLowerCase()}">
+            <td>${formatDate(r.date)}</td>
+            <td>${formatTime(r.checkIn)}</td>
+            <td>${formatTime(r.checkOut)}</td>
+            <td>${r.workingHours != null ? Number(r.workingHours).toFixed(2) : "-"}</td>
+            <td>${getStatusBadge(r.status)}</td>
+          </tr>`).join("");
+      } catch (err) {
+        body.innerHTML = `<tr><td colspan="5" class="empty-state">${apiError(err)}</td></tr>`;
+      }
+    }
+
+    document.getElementById("checkInBtn").addEventListener("click", async () => {
+      showLoading("checkInBtn", "Checking in...");
+      try {
+        const res = await checkIn();
+        showToast(res?.message || "Checked in successfully", "success");
+      } catch (err) {
+        showToast(apiError(err), "danger");
+      }
+      hideLoading("checkInBtn", "Check In");
+      loadToday(); loadRecent();
+    });
+
+    document.getElementById("checkOutBtn").addEventListener("click", async () => {
+      showLoading("checkOutBtn", "Checking out...");
+      try {
+        const res = await checkOut();
+        showToast(res?.message || "Checked out successfully", "success");
+      } catch (err) {
+        showToast(apiError(err), "danger");
+      }
+      hideLoading("checkOutBtn", "Check Out");
+      loadToday(); loadRecent();
+    });
+
+    loadToday();
+    loadBalance();
+    loadRecent();
+  </script>
+</body>
+</html>
