@@ -1,0 +1,752 @@
+<meta charset="utf-8">
+<title>AttendTrack Architecture</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --surface:#ffffff;
+    --surface-2:#fbfcfd;
+    --ink:#1b202a;
+    --ink-soft:#586173;
+    --hair:#e2e5ec;
+    --grid:#eceef3;
+
+    --c-fe:#2563eb;    --c-fe-fill:#eef3ff;
+    --c-auth:#0f9d6e;  --c-auth-fill:#e7f6f0;
+    --c-att:#7c3aed;   --c-att-fill:#f1ebfd;
+    --c-lv:#e2620c;    --c-lv-fill:#fcefe3;
+    --c-kfk:#d92d2d;   --c-kfk-fill:#fbebeb;
+    --c-db:#2b3a52;    --c-db-ink:#eaf0fb;
+    --c-docker:#8a94a6;
+
+    --evt:#d92d2d;
+
+    --radius:12px;
+    --sans:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#0e1116;
+      --surface:#151a22;
+      --surface-2:#121820;
+      --ink:#e7eaf0;
+      --ink-soft:#98a2b3;
+      --hair:#262c37;
+      --grid:#1b212b;
+
+      --c-fe:#5b8def;    --c-fe-fill:#16233c;
+      --c-auth:#2bb98a;  --c-auth-fill:#0f3229;
+      --c-att:#a480f7;   --c-att-fill:#241539;
+      --c-lv:#f2803f;    --c-lv-fill:#38230f;
+      --c-kfk:#ef5f5c;   --c-kfk-fill:#391a1a;
+      --c-db:#c8d5ec;    --c-db-ink:#101620;
+      --c-docker:#5c6678;
+
+      --evt:#ef5f5c;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1116;
+    --surface:#151a22;
+    --surface-2:#121820;
+    --ink:#e7eaf0;
+    --ink-soft:#98a2b3;
+    --hair:#262c37;
+    --grid:#1b212b;
+
+    --c-fe:#5b8def;    --c-fe-fill:#16233c;
+    --c-auth:#2bb98a;  --c-auth-fill:#0f3229;
+    --c-att:#a480f7;   --c-att-fill:#241539;
+    --c-lv:#f2803f;    --c-lv-fill:#38230f;
+    --c-kfk:#ef5f5c;   --c-kfk-fill:#391a1a;
+    --c-db:#c8d5ec;    --c-db-ink:#101620;
+    --c-docker:#5c6678;
+
+    --evt:#ef5f5c;
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.6;
+    font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:56px 28px 96px}
+
+  header.page{
+    border-bottom:1px solid var(--hair);
+    padding-bottom:26px;
+    margin-bottom:40px;
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 12px;
+  }
+  h1{
+    font-size:clamp(30px,4.6vw,44px);
+    line-height:1.1;
+    font-weight:700;
+    letter-spacing:-.02em;
+    text-wrap:balance;
+    margin:0 0 14px;
+  }
+  header.page p{
+    margin:0;
+    max-width:64ch;
+    color:var(--ink-soft);
+    font-size:16.5px;
+  }
+  .meta{
+    margin-top:18px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .meta code{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-soft);
+    background:var(--surface);
+    border:1px solid var(--hair);
+    border-radius:999px;
+    padding:4px 11px;
+  }
+
+  section{margin-top:56px}
+  h2{
+    font-size:13px;
+    font-family:var(--mono);
+    font-weight:600;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 6px;
+  }
+  .section-lead{
+    margin:0 0 24px;
+    color:var(--ink-soft);
+    max-width:70ch;
+    font-size:15px;
+  }
+
+  figure{
+    margin:0;
+    background:var(--surface);
+    border:1px solid var(--hair);
+    border-radius:var(--radius);
+    padding:22px;
+    overflow-x:auto;
+  }
+  figure svg{display:block;width:100%;height:auto;min-width:640px;color:var(--ink-soft)}
+  figcaption{
+    margin-top:14px;
+    padding-top:13px;
+    border-top:1px solid var(--hair);
+    font-size:13.5px;
+    color:var(--ink-soft);
+  }
+
+  /* ---- shared SVG classes (inline SVG is styled by page CSS) ---- */
+  .node{fill:var(--surface);stroke:var(--hair);stroke-width:1.4}
+  .node-2{fill:var(--surface-2);stroke:var(--hair);stroke-width:1.2}
+  .t-title{fill:var(--ink);font-family:var(--sans);font-weight:600;font-size:14px}
+  .t-strong{fill:var(--ink);font-family:var(--sans);font-weight:600;font-size:12.5px}
+  .t-mono{fill:var(--ink-soft);font-family:var(--mono);font-size:10.5px}
+  .t-mono-ink{fill:var(--ink);font-family:var(--mono);font-size:11px}
+  .t-label{fill:var(--ink-soft);font-family:var(--sans);font-size:11px}
+  .t-eyebrow{fill:var(--ink-soft);font-family:var(--mono);font-size:10px;letter-spacing:.12em}
+
+  .tag{fill:var(--surface);stroke:var(--hair);stroke-width:1}
+  .tag-t{fill:var(--ink-soft);font-family:var(--mono);font-size:9.5px}
+
+  .edge{fill:none;stroke:currentColor;stroke-width:1.6;marker-end:url(#ah)}
+  .edge-db{fill:none;stroke:var(--c-db);stroke-width:3;stroke-linecap:round}
+  .edge-evt{fill:none;stroke:var(--evt);stroke-width:1.6;stroke-dasharray:6 5;marker-end:url(#ah-evt)}
+  .edge-plain{fill:none;stroke:currentColor;stroke-width:1.4}
+  .lbl-bg{fill:var(--surface)}
+  .lbl{fill:var(--ink-soft);font-family:var(--mono);font-size:10px}
+  .lbl-strong{fill:var(--ink);font-family:var(--mono);font-size:10px;font-weight:600}
+
+  .dockerbox{fill:none;stroke:var(--c-docker);stroke-width:1.5;stroke-dasharray:3 5}
+
+  .badge{fill:var(--ink)}
+  .badge-t{fill:var(--surface);font-family:var(--mono);font-size:10px;font-weight:600}
+
+  /* ---- legend ---- */
+  .legend{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:28px 40px;
+    background:var(--surface);
+    border:1px solid var(--hair);
+    border-radius:var(--radius);
+    padding:24px 26px;
+  }
+  .legend h3{
+    margin:0 0 12px;
+    font-size:11px;
+    font-family:var(--mono);
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+  .legend ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  .legend li{display:flex;align-items:center;gap:12px;font-size:13.5px}
+  .swatch{width:26px;height:16px;border-radius:5px;flex:none;border:1px solid rgba(0,0,0,.08)}
+  .line-key{width:34px;height:0;flex:none}
+  .line-solid{border-top:2px solid var(--ink-soft)}
+  .line-dashed{border-top:2px dashed var(--evt)}
+  .line-thick{border-top:3px solid var(--c-db)}
+  .legend code{font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+
+  /* ---- flow steps ---- */
+  .flow{margin-top:34px}
+  .flow-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .flow-no{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:12px;
+    color:var(--bg);
+    background:var(--ink);
+    border-radius:6px;
+    padding:3px 8px;
+    letter-spacing:.04em;
+  }
+  .flow-name{font-size:19px;font-weight:600;letter-spacing:-.01em;margin:0}
+  .flow-ep{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft)}
+  ol.steps{
+    margin:16px 0 0;
+    padding:0;
+    list-style:none;
+    counter-reset:step;
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+  }
+  ol.steps li{
+    counter-increment:step;
+    position:relative;
+    padding-left:34px;
+    font-size:14.5px;
+    color:var(--ink);
+  }
+  ol.steps li::before{
+    content:counter(step);
+    position:absolute;left:0;top:1px;
+    width:22px;height:22px;
+    display:grid;place-items:center;
+    font-family:var(--mono);font-size:11px;font-weight:600;
+    color:var(--ink-soft);
+    background:var(--surface);
+    border:1px solid var(--hair);
+    border-radius:50%;
+  }
+  ol.steps li b{font-weight:600}
+  ol.steps li code{
+    font-family:var(--mono);
+    font-size:12.5px;
+    background:var(--surface);
+    border:1px solid var(--hair);
+    border-radius:5px;
+    padding:1px 6px;
+  }
+
+  footer.page{
+    margin-top:72px;
+    padding-top:22px;
+    border-top:1px solid var(--hair);
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  footer.page code{font-family:var(--mono);font-size:12px}
+
+  @media (max-width:760px){
+    .wrap{padding:40px 18px 72px}
+    .legend{grid-template-columns:1fr;gap:22px}
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="page">
+    <p class="eyebrow">System Design · Reference</p>
+    <h1>AttendTrack Architecture</h1>
+    <p>End-to-end view of the AttendTrack employee attendance platform: a static browser
+      frontend talking over REST + JWT to three independent Spring Boot services, each with
+      its own MySQL database, loosely coupled through a single Kafka topic. Below the map are
+      the five request flows that carry the product — registration, login, check-in/out,
+      leave application and HR approval.</p>
+    <div class="meta">
+      <code>Spring Boot 3.3.5</code>
+      <code>Java 21</code>
+      <code>MySQL 8</code>
+      <code>Apache Kafka</code>
+      <code>Docker Compose</code>
+    </div>
+  </header>
+
+  <!-- ============================ MASTER MAP ============================ -->
+  <section aria-labelledby="map-h">
+    <h2 id="map-h">Component Map</h2>
+    <p class="section-lead">Frontend on the left, the three microservices stacked in the
+      centre, their databases on the right, the message broker along the bottom. The dashed
+      grey boundary is the <code>docker compose</code> deployment — six containers on one
+      bridge network.</p>
+
+    <figure>
+      <svg viewBox="0 0 1200 700" role="img"
+           aria-label="AttendTrack deployment diagram. The browser frontend (frontend2) calls three Spring Boot services over REST with JWT: AuthService on port 8081, AttendanceService on 8082, LeaveService on 8083. Each service connects over JDBC to its own MySQL database: authservice_db, attendanceservice_db and leaveservice_db. AuthService publishes a user-registered event to Apache Kafka; AttendanceService and LeaveService consume it. Kafka is coordinated by ZooKeeper. All services, databases, Kafka and ZooKeeper run inside a Docker Compose boundary of six containers.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+          </marker>
+          <marker id="ah-evt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--evt)"/>
+          </marker>
+        </defs>
+
+        <!-- Docker boundary -->
+        <rect class="dockerbox" x="268" y="30" width="916" height="640" rx="16"/>
+        <rect x="282" y="18" width="256" height="24" fill="var(--bg)"/>
+        <text class="t-eyebrow" x="294" y="34">DOCKER COMPOSE · 6 CONTAINERS</text>
+
+        <!-- ===== Frontend ===== -->
+        <text class="t-eyebrow" x="20" y="170">BROWSER</text>
+        <rect class="node" x="20" y="178" width="190" height="322" rx="12" fill="var(--c-fe-fill)"/>
+        <rect x="20" y="178" width="5" height="322" rx="2.5" fill="var(--c-fe)"/>
+        <text class="t-title" x="38" y="206">Frontend</text>
+        <text class="t-mono" x="38" y="224">static · frontend2/</text>
+        <rect class="tag" x="38" y="236" width="154" height="22" rx="6"/><text class="tag-t" x="48" y="250">Login</text>
+        <rect class="tag" x="38" y="264" width="154" height="22" rx="6"/><text class="tag-t" x="48" y="278">Employee Dashboard</text>
+        <rect class="tag" x="38" y="292" width="154" height="22" rx="6"/><text class="tag-t" x="48" y="306">HR Dashboard</text>
+        <rect class="tag" x="38" y="320" width="154" height="22" rx="6"/><text class="tag-t" x="48" y="334">Attendance</text>
+        <rect class="tag" x="38" y="348" width="154" height="22" rx="6"/><text class="tag-t" x="48" y="362">Leaves</text>
+        <text class="t-mono" x="38" y="392">HTML · CSS · JS</text>
+        <text class="t-mono" x="38" y="410">localStorage:</text>
+        <text class="t-mono" x="38" y="425">JWT + refresh token</text>
+
+        <!-- ===== Services (centre column) ===== -->
+        <!-- AuthService -->
+        <rect class="node" x="392" y="56" width="372" height="126" rx="12" fill="var(--c-auth-fill)"/>
+        <rect x="392" y="56" width="5" height="126" rx="2.5" fill="var(--c-auth)"/>
+        <text class="t-title" x="414" y="84">AuthService</text>
+        <text class="t-mono" x="414" y="101">Spring Boot</text>
+        <text class="t-mono-ink" x="750" y="84" text-anchor="end">:8081</text>
+        <rect class="tag" x="414" y="112" width="96" height="20" rx="6"/><text class="tag-t" x="423" y="125">REST APIs</text>
+        <rect class="tag" x="520" y="112" width="150" height="20" rx="6"/><text class="tag-t" x="529" y="125">Spring Security · JWT</text>
+        <rect class="tag" x="414" y="138" width="120" height="20" rx="6"/><text class="tag-t" x="423" y="151">BCrypt password</text>
+        <rect class="tag" x="544" y="138" width="116" height="20" rx="6"/><text class="tag-t" x="553" y="151">Kafka producer</text>
+
+        <!-- AttendanceService -->
+        <rect class="node" x="392" y="270" width="372" height="126" rx="12" fill="var(--c-att-fill)"/>
+        <rect x="392" y="270" width="5" height="126" rx="2.5" fill="var(--c-att)"/>
+        <text class="t-title" x="414" y="298">AttendanceService</text>
+        <text class="t-mono" x="414" y="315">Spring Boot</text>
+        <text class="t-mono-ink" x="750" y="298" text-anchor="end">:8082</text>
+        <rect class="tag" x="414" y="326" width="96" height="20" rx="6"/><text class="tag-t" x="423" y="339">REST APIs</text>
+        <rect class="tag" x="520" y="326" width="118" height="20" rx="6"/><text class="tag-t" x="529" y="339">JWT validation</text>
+        <rect class="tag" x="414" y="352" width="118" height="20" rx="6"/><text class="tag-t" x="423" y="365">Kafka consumer</text>
+        <rect class="tag" x="544" y="352" width="152" height="20" rx="6"/><text class="tag-t" x="553" y="365">late / half-day rules</text>
+
+        <!-- LeaveService -->
+        <rect class="node" x="392" y="484" width="372" height="126" rx="12" fill="var(--c-lv-fill)"/>
+        <rect x="392" y="484" width="5" height="126" rx="2.5" fill="var(--c-lv)"/>
+        <text class="t-title" x="414" y="512">LeaveService</text>
+        <text class="t-mono" x="414" y="529">Spring Boot</text>
+        <text class="t-mono-ink" x="750" y="512" text-anchor="end">:8083</text>
+        <rect class="tag" x="414" y="540" width="96" height="20" rx="6"/><text class="tag-t" x="423" y="553">REST APIs</text>
+        <rect class="tag" x="520" y="540" width="118" height="20" rx="6"/><text class="tag-t" x="529" y="553">JWT validation</text>
+        <rect class="tag" x="414" y="566" width="118" height="20" rx="6"/><text class="tag-t" x="423" y="579">Kafka consumer</text>
+        <rect class="tag" x="544" y="566" width="188" height="20" rx="6"/><text class="tag-t" x="553" y="579">balance · overlap · deduction</text>
+
+        <!-- ===== Databases (right column) ===== -->
+        <g>
+          <path d="M928 106 a78 13 0 0 0 156 0 v52 a78 13 0 0 1 -156 0 z" fill="var(--c-db)"/>
+          <ellipse cx="1006" cy="106" rx="78" ry="13" fill="var(--c-db)"/>
+          <ellipse cx="1006" cy="106" rx="78" ry="13" fill="none" stroke="var(--surface)" stroke-opacity="0.28"/>
+          <text x="1006" y="140" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="11" font-weight="600">authservice_db</text>
+          <text x="1006" y="156" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="9" opacity="0.75">MySQL 8</text>
+        </g>
+        <g>
+          <path d="M928 320 a78 13 0 0 0 156 0 v52 a78 13 0 0 1 -156 0 z" fill="var(--c-db)"/>
+          <ellipse cx="1006" cy="320" rx="78" ry="13" fill="var(--c-db)"/>
+          <ellipse cx="1006" cy="320" rx="78" ry="13" fill="none" stroke="var(--surface)" stroke-opacity="0.28"/>
+          <text x="1006" y="354" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="10.5" font-weight="600">attendanceservice_db</text>
+          <text x="1006" y="370" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="9" opacity="0.75">MySQL 8</text>
+        </g>
+        <g>
+          <path d="M928 534 a78 13 0 0 0 156 0 v52 a78 13 0 0 1 -156 0 z" fill="var(--c-db)"/>
+          <ellipse cx="1006" cy="534" rx="78" ry="13" fill="var(--c-db)"/>
+          <ellipse cx="1006" cy="534" rx="78" ry="13" fill="none" stroke="var(--surface)" stroke-opacity="0.28"/>
+          <text x="1006" y="568" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="11" font-weight="600">leaveservice_db</text>
+          <text x="1006" y="584" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="9" opacity="0.75">MySQL 8</text>
+        </g>
+
+        <!-- JDBC connections (thick) -->
+        <line class="edge-db" x1="764" y1="119" x2="928" y2="119"/>
+        <line class="edge-db" x1="764" y1="333" x2="928" y2="333"/>
+        <line class="edge-db" x1="764" y1="547" x2="928" y2="547"/>
+        <rect class="lbl-bg" x="826" y="111" width="40" height="15"/><text class="lbl" x="831" y="122">JDBC</text>
+        <rect class="lbl-bg" x="826" y="325" width="40" height="15"/><text class="lbl" x="831" y="336">JDBC</text>
+        <rect class="lbl-bg" x="826" y="539" width="40" height="15"/><text class="lbl" x="831" y="550">JDBC</text>
+
+        <!-- ===== Kafka + ZooKeeper (bottom) ===== -->
+        <rect class="node" x="392" y="620" width="300" height="44" rx="10" fill="var(--c-kfk-fill)"/>
+        <rect x="392" y="620" width="5" height="44" rx="2.5" fill="var(--c-kfk)"/>
+        <text class="t-strong" x="412" y="640">Apache Kafka</text>
+        <text class="t-mono" x="412" y="656">topic: user-registered</text>
+
+        <rect class="node" x="716" y="624" width="150" height="36" rx="10" fill="var(--c-kfk-fill)"/>
+        <rect x="716" y="624" width="5" height="36" rx="2.5" fill="var(--c-kfk)"/>
+        <text class="t-strong" x="734" y="641">ZooKeeper</text>
+        <text class="t-mono" x="734" y="654">coordination</text>
+        <line class="edge-plain" x1="692" y1="642" x2="716" y2="642"/>
+
+        <!-- ===== HTTP edges: Frontend -> services (solid grey) ===== -->
+        <path class="edge" d="M210 240 H340 V119 H392"/>
+        <path class="edge" d="M210 300 H322 V333 H392"/>
+        <path class="edge" d="M210 360 H332 V547 H392"/>
+        <rect class="lbl-bg" x="292" y="104" width="62" height="14"/><text class="lbl-strong" x="296" y="115">REST · JWT</text>
+        <rect class="lbl-bg" x="326" y="319" width="62" height="14"/><text class="lbl-strong" x="330" y="330">REST · JWT</text>
+        <rect class="lbl-bg" x="330" y="532" width="62" height="14"/><text class="lbl-strong" x="334" y="543">REST · JWT</text>
+        <circle class="badge" cx="224" cy="232" r="8"/><text class="badge-t" x="224" y="235" text-anchor="middle">1</text>
+        <circle class="badge" cx="224" cy="250" r="8"/><text class="badge-t" x="224" y="253" text-anchor="middle">2</text>
+        <circle class="badge" cx="224" cy="300" r="8"/><text class="badge-t" x="224" y="303" text-anchor="middle">3</text>
+        <circle class="badge" cx="224" cy="352" r="8"/><text class="badge-t" x="224" y="355" text-anchor="middle">4</text>
+        <circle class="badge" cx="224" cy="370" r="8"/><text class="badge-t" x="224" y="373" text-anchor="middle">5</text>
+
+        <!-- ===== Kafka event edges (dashed red) ===== -->
+        <!-- AuthService publishes down into Kafka -->
+        <path class="edge-evt" d="M430 182 V206 H304 V600 H440 V620"/>
+        <rect class="lbl-bg" x="308" y="192" width="128" height="14"/><text class="lbl" x="312" y="203">publish user-registered</text>
+        <circle class="badge" cx="304" cy="246" r="8"/><text class="badge-t" x="304" y="249" text-anchor="middle">1</text>
+        <!-- Kafka -> AttendanceService consume -->
+        <path class="edge-evt" d="M392 636 H288 V333 H392"/>
+        <rect class="lbl-bg" x="300" y="628" width="54" height="14"/><text class="lbl" x="304" y="639">consume</text>
+        <!-- Kafka -> LeaveService consume -->
+        <path class="edge-evt" d="M392 650 H274 V560 H392"/>
+        <rect class="lbl-bg" x="300" y="642" width="54" height="14"/><text class="lbl" x="304" y="653">consume</text>
+      </svg>
+      <figcaption>Solid grey arrows are synchronous HTTP/REST calls carrying a JWT; dashed
+        red arrows are the asynchronous <code>user-registered</code> Kafka event; thick slate
+        lines are JDBC connections. The event lets AttendanceService create an
+        <code>EmployeeProfile</code> and LeaveService create a <code>LeaveBalance</code>
+        (PL&nbsp;12, SL&nbsp;6, salary) — no service ever reads another service's database.
+        Numbered badges map to the five flows below.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================ LEGEND ============================ -->
+  <section aria-labelledby="legend-h">
+    <h2 id="legend-h">Legend</h2>
+    <div class="legend">
+      <div>
+        <h3>Connections</h3>
+        <ul>
+          <li><span class="line-key line-solid"></span><span><b>HTTP / REST</b> — request + JSON, <code>Authorization: Bearer &lt;JWT&gt;</code></span></li>
+          <li><span class="line-key line-dashed"></span><span><b>Kafka event</b> — asynchronous, topic <code>user-registered</code></span></li>
+          <li><span class="line-key line-thick"></span><span><b>JDBC</b> — service &rarr; its own MySQL schema</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Components</h3>
+        <ul>
+          <li><span class="swatch" style="background:var(--c-fe)"></span>Frontend — browser, <code>frontend2/</code></li>
+          <li><span class="swatch" style="background:var(--c-auth)"></span>AuthService — <code>:8081</code></li>
+          <li><span class="swatch" style="background:var(--c-att)"></span>AttendanceService — <code>:8082</code></li>
+          <li><span class="swatch" style="background:var(--c-lv)"></span>LeaveService — <code>:8083</code></li>
+          <li><span class="swatch" style="background:var(--c-kfk)"></span>Kafka + ZooKeeper — message broker</li>
+          <li><span class="swatch" style="background:var(--c-db)"></span>MySQL — one database per service</li>
+          <li><span class="swatch" style="background:transparent;border:1.5px dashed var(--c-docker)"></span>Docker Compose deployment boundary</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FLOWS ============================ -->
+  <section aria-labelledby="flows-h">
+    <h2 id="flows-h">Request Flows</h2>
+    <p class="section-lead">Each flow is one user action traced through the system. Endpoints
+      and side effects are exact; the small diagram shows the hops, the numbered list is the
+      order they run in.</p>
+
+    <!-- FLOW 1 -->
+    <article class="flow">
+      <div class="flow-head">
+        <span class="flow-no">FLOW 1</span>
+        <h3 class="flow-name">Registration</h3>
+        <span class="flow-ep">POST&nbsp;/auth/register</span>
+      </div>
+      <figure>
+        <svg viewBox="0 0 1120 330" role="img"
+             aria-label="Registration flow. The frontend POSTs to /auth/register on AuthService. AuthService inserts a row into authservice_db and publishes a user-registered event to Kafka. AttendanceService consumes the event and creates an EmployeeProfile in attendanceservice_db. LeaveService consumes the same event and creates a LeaveBalance (PL 12, SL 6, salary) in leaveservice_db.">
+          <defs>
+            <marker id="f1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker>
+            <marker id="f1e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--evt)"/></marker>
+          </defs>
+
+          <!-- row A: sync -->
+          <rect class="node" x="20" y="26" width="150" height="48" rx="10" fill="var(--c-fe-fill)"/>
+          <text class="t-strong" x="95" y="47" text-anchor="middle">Frontend</text>
+          <text class="t-mono" x="95" y="63" text-anchor="middle">register form</text>
+
+          <rect class="node" x="330" y="26" width="164" height="48" rx="10" fill="var(--c-auth-fill)"/>
+          <text class="t-strong" x="412" y="47" text-anchor="middle">AuthService</text>
+          <text class="t-mono" x="412" y="63" text-anchor="middle">:8081</text>
+
+          <path d="M912 40 a44 11 0 0 0 88 0 v40 a44 11 0 0 1 -88 0 z" fill="var(--c-db)"/>
+          <ellipse cx="956" cy="40" rx="44" ry="11" fill="var(--c-db)"/>
+          <text x="956" y="70" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="9.5">authservice_db</text>
+
+          <path class="edge-plain" marker-end="url(#f1a)" d="M170 50 H326"/>
+          <rect class="lbl-bg" x="196" y="34" width="128" height="14"/><text class="lbl" x="200" y="45">POST /auth/register</text>
+          <path class="edge-plain" marker-end="url(#f1a)" d="M494 50 H908"/>
+          <rect class="lbl-bg" x="590" y="34" width="132" height="14"/><text class="lbl" x="594" y="45">INSERT users (+ salary)</text>
+
+          <!-- publish -->
+          <path class="edge-plain" marker-end="url(#f1e)" stroke="var(--evt)" stroke-dasharray="6 5" d="M412 74 V128 H548"/>
+          <rect class="lbl-bg" x="420" y="94" width="150" height="14"/><text class="lbl" x="424" y="105">publish user-registered</text>
+
+          <!-- Kafka -->
+          <rect class="node" x="548" y="112" width="180" height="44" rx="10" fill="var(--c-kfk-fill)"/>
+          <text class="t-strong" x="638" y="131" text-anchor="middle">Kafka</text>
+          <text class="t-mono" x="638" y="146" text-anchor="middle">topic: user-registered</text>
+
+          <!-- fan-out -->
+          <path class="edge-plain" marker-end="url(#f1e)" stroke="var(--evt)" stroke-dasharray="6 5" d="M638 156 V214 H346"/>
+          <path class="edge-plain" marker-end="url(#f1e)" stroke="var(--evt)" stroke-dasharray="6 5" d="M638 156 V272 H346"/>
+          <rect class="lbl-bg" x="360" y="198" width="60" height="14"/><text class="lbl" x="364" y="209">consume</text>
+          <rect class="lbl-bg" x="360" y="256" width="60" height="14"/><text class="lbl" x="364" y="267">consume</text>
+
+          <!-- AttendanceService -->
+          <rect class="node" x="180" y="192" width="166" height="46" rx="10" fill="var(--c-att-fill)"/>
+          <text class="t-strong" x="263" y="211" text-anchor="middle">AttendanceService</text>
+          <text class="t-mono" x="263" y="227" text-anchor="middle">:8082</text>
+          <path class="edge-plain" marker-end="url(#f1a)" d="M346 215 H430"/>
+          <path d="M430 200 a44 11 0 0 0 88 0 v30 a44 11 0 0 1 -88 0 z" fill="var(--c-db)"/>
+          <ellipse cx="474" cy="200" rx="44" ry="11" fill="var(--c-db)"/>
+          <text x="474" y="222" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="8.5">attendanceservice_db</text>
+          <rect class="lbl-bg" x="352" y="182" width="120" height="14"/><text class="lbl" x="356" y="193">create EmployeeProfile</text>
+
+          <!-- LeaveService -->
+          <rect class="node" x="180" y="250" width="166" height="46" rx="10" fill="var(--c-lv-fill)"/>
+          <text class="t-strong" x="263" y="269" text-anchor="middle">LeaveService</text>
+          <text class="t-mono" x="263" y="285" text-anchor="middle">:8083</text>
+          <path class="edge-plain" marker-end="url(#f1a)" d="M346 273 H430"/>
+          <path d="M430 258 a44 11 0 0 0 88 0 v30 a44 11 0 0 1 -88 0 z" fill="var(--c-db)"/>
+          <ellipse cx="474" cy="258" rx="44" ry="11" fill="var(--c-db)"/>
+          <text x="474" y="280" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="9">leaveservice_db</text>
+          <rect class="lbl-bg" x="352" y="240" width="200" height="14"/><text class="lbl" x="356" y="251">create LeaveBalance · PL 12 · SL 6 · salary</text>
+        </svg>
+        <figcaption>The HTTP response returns as soon as the user row is saved and the event
+          is published; profile and balance creation happen asynchronously in the two
+          consumers (idempotent, so a replayed event is safe).</figcaption>
+      </figure>
+      <ol class="steps">
+        <li>Frontend sends <code>POST /auth/register</code> to <b>AuthService</b> with name, email, password, role, department and <b>salary</b>.</li>
+        <li>AuthService validates, BCrypt-hashes the password, generates the next <code>EMP0xx</code> id and saves the row to <b>authservice_db</b>.</li>
+        <li>AuthService publishes a <code>user-registered</code> event (payload includes <code>salary</code>) to <b>Kafka</b> and returns <code>201 Created</code>.</li>
+        <li><b>AttendanceService</b> consumes the event and creates an <code>EmployeeProfile</code> in <b>attendanceservice_db</b>.</li>
+        <li><b>LeaveService</b> consumes the event and creates a <code>LeaveBalance</code> (<code>pl_total 12</code>, <code>sl_total 6</code>, <code>monthly_salary</code> from the event) in <b>leaveservice_db</b>.</li>
+      </ol>
+    </article>
+
+    <!-- FLOW 2 -->
+    <article class="flow">
+      <div class="flow-head">
+        <span class="flow-no">FLOW 2</span>
+        <h3 class="flow-name">Login</h3>
+        <span class="flow-ep">POST&nbsp;/auth/login</span>
+      </div>
+      <figure>
+        <svg viewBox="0 0 1120 120" role="img"
+             aria-label="Login flow. Frontend POSTs to /auth/login. AuthService verifies the BCrypt password hash, generates a 1-hour JWT access token and a 24-hour refresh token, and returns them. The frontend stores both in localStorage.">
+          <defs><marker id="f2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>
+          <rect class="node" x="20" y="36" width="150" height="48" rx="10" fill="var(--c-fe-fill)"/>
+          <text class="t-strong" x="95" y="57" text-anchor="middle">Frontend</text>
+          <text class="t-mono" x="95" y="73" text-anchor="middle">login form</text>
+
+          <rect class="node" x="470" y="30" width="200" height="60" rx="10" fill="var(--c-auth-fill)"/>
+          <text class="t-strong" x="570" y="52" text-anchor="middle">AuthService</text>
+          <text class="t-mono" x="570" y="68" text-anchor="middle">BCrypt verify · sign JWT</text>
+          <text class="t-mono" x="570" y="82" text-anchor="middle">:8081</text>
+
+          <rect class="node-2" x="930" y="36" width="170" height="48" rx="10"/>
+          <text class="t-strong" x="1015" y="57" text-anchor="middle">localStorage</text>
+          <text class="t-mono" x="1015" y="73" text-anchor="middle">accessToken · refreshToken</text>
+
+          <path class="edge-plain" marker-end="url(#f2a)" d="M170 60 H466"/>
+          <rect class="lbl-bg" x="250" y="44" width="120" height="14"/><text class="lbl" x="254" y="55">POST /auth/login</text>
+          <path class="edge-plain" marker-end="url(#f2a)" d="M670 60 H926"/>
+          <rect class="lbl-bg" x="720" y="44" width="176" height="14"/><text class="lbl" x="724" y="55">200 · JWT (1h) + refresh (24h)</text>
+        </svg>
+        <figcaption>The access token is a signed JWT (HS256, shared secret); the refresh token
+          is an opaque UUID persisted in <code>authservice_db.refresh_tokens</code>.</figcaption>
+      </figure>
+      <ol class="steps">
+        <li>Frontend sends <code>POST /auth/login</code> with email and password to <b>AuthService</b>.</li>
+        <li>AuthService looks up the user and verifies the password against the stored <b>BCrypt</b> hash (same error for unknown email and wrong password).</li>
+        <li>On success it generates a <b>JWT access token</b> (1&nbsp;hour) and a <b>refresh token</b> (24&nbsp;hours, stored in the DB).</li>
+        <li>Response returns <code>accessToken</code>, <code>refreshToken</code>, <code>userId</code>, <code>role</code>, <code>employeeId</code>, <code>firstName</code>.</li>
+        <li>Frontend stores both tokens in <b>localStorage</b> and redirects to the employee or HR dashboard by role.</li>
+      </ol>
+    </article>
+
+    <!-- FLOW 3 -->
+    <article class="flow">
+      <div class="flow-head">
+        <span class="flow-no">FLOW 3</span>
+        <h3 class="flow-name">Check-in / Check-out</h3>
+        <span class="flow-ep">POST&nbsp;/attendance/checkin</span>
+      </div>
+      <figure>
+        <svg viewBox="0 0 1120 120" role="img"
+             aria-label="Check-in flow. Frontend POSTs to /attendance/checkin with the Bearer JWT. AttendanceService validates the token, checks whether the user already checked in today, saves the attendance row as PRESENT or LATE against the 09:30 threshold in attendanceservice_db, and returns the check-in time and status.">
+          <defs><marker id="f3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>
+          <rect class="node" x="20" y="36" width="150" height="48" rx="10" fill="var(--c-fe-fill)"/>
+          <text class="t-strong" x="95" y="57" text-anchor="middle">Frontend</text>
+          <text class="t-mono" x="95" y="73" text-anchor="middle">dashboard</text>
+
+          <rect class="node" x="430" y="24" width="250" height="72" rx="10" fill="var(--c-att-fill)"/>
+          <text class="t-strong" x="555" y="45" text-anchor="middle">AttendanceService</text>
+          <text class="t-mono" x="555" y="61" text-anchor="middle">verify JWT · guard duplicate</text>
+          <text class="t-mono" x="555" y="76" text-anchor="middle">PRESENT if &lt; 09:30 else LATE</text>
+          <text class="t-mono" x="555" y="90" text-anchor="middle">:8082</text>
+
+          <path d="M900 40 a44 11 0 0 0 88 0 v40 a44 11 0 0 1 -88 0 z" fill="var(--c-db)"/>
+          <ellipse cx="944" cy="40" rx="44" ry="11" fill="var(--c-db)"/>
+          <text x="944" y="70" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="8">attendanceservice_db</text>
+
+          <path class="edge-plain" marker-end="url(#f3a)" d="M170 60 H426"/>
+          <rect class="lbl-bg" x="196" y="44" width="210" height="14"/><text class="lbl" x="200" y="55">POST /attendance/checkin · Bearer JWT</text>
+          <path class="edge-plain" marker-end="url(#f3a)" d="M680 60 H896"/>
+          <rect class="lbl-bg" x="718" y="44" width="150" height="14"/><text class="lbl" x="722" y="55">INSERT / UPDATE attendance</text>
+          <path class="edge-plain" marker-end="url(#f3a)" d="M540 96 V110 H150 V60 H166"/>
+          <rect class="lbl-bg" x="196" y="100" width="176" height="14"/><text class="lbl" x="200" y="111">200 · checkInTime + status</text>
+        </svg>
+        <figcaption>A unique <code>(user_id, date)</code> constraint plus an in-code guard
+          allow exactly one check-in per day. Check-out spans the real dates so an overnight
+          shift never yields negative hours; <code>&lt; 4 h</code> worked marks
+          <code>HALF_DAY</code>.</figcaption>
+      </figure>
+      <ol class="steps">
+        <li>Frontend sends <code>POST /attendance/checkin</code> to <b>AttendanceService</b> with the <code>Authorization: Bearer</code> JWT.</li>
+        <li>AttendanceService <b>validates the JWT</b> locally (shared secret &mdash; no call to AuthService).</li>
+        <li>It checks whether the user has <b>already checked in today</b>; if so it rejects the request.</li>
+        <li>It saves the attendance row with status <b>PRESENT</b> (before 09:30) or <b>LATE</b> (after) in <b>attendanceservice_db</b>.</li>
+        <li>Response returns <code>checkInTime</code> and <code>status</code>. Check-out later computes <code>workingHours</code> and the final status.</li>
+      </ol>
+    </article>
+
+    <!-- FLOW 4 -->
+    <article class="flow">
+      <div class="flow-head">
+        <span class="flow-no">FLOW 4</span>
+        <h3 class="flow-name">Leave Application</h3>
+        <span class="flow-ep">POST&nbsp;/leave/apply</span>
+      </div>
+      <figure>
+        <svg viewBox="0 0 1120 120" role="img"
+             aria-label="Leave apply flow. Frontend POSTs to /leave/apply with the Bearer JWT. LeaveService validates the token, then checks the PL or SL balance, checks for overlapping requests, and checks the dates are in the future. If all pass it saves a PENDING leave_request in leaveservice_db.">
+          <defs><marker id="f4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>
+          <rect class="node" x="20" y="36" width="150" height="48" rx="10" fill="var(--c-fe-fill)"/>
+          <text class="t-strong" x="95" y="57" text-anchor="middle">Frontend</text>
+          <text class="t-mono" x="95" y="73" text-anchor="middle">apply form</text>
+
+          <rect class="node" x="420" y="18" width="270" height="84" rx="10" fill="var(--c-lv-fill)"/>
+          <text class="t-strong" x="555" y="39" text-anchor="middle">LeaveService</text>
+          <text class="t-mono" x="555" y="55" text-anchor="middle">verify JWT</text>
+          <text class="t-mono" x="555" y="69" text-anchor="middle">balance · overlap · future-date</text>
+          <text class="t-mono" x="555" y="83" text-anchor="middle">:8083</text>
+
+          <path d="M900 40 a44 11 0 0 0 88 0 v40 a44 11 0 0 1 -88 0 z" fill="var(--c-db)"/>
+          <ellipse cx="944" cy="40" rx="44" ry="11" fill="var(--c-db)"/>
+          <text x="944" y="70" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="9">leaveservice_db</text>
+
+          <path class="edge-plain" marker-end="url(#f4a)" d="M170 60 H416"/>
+          <rect class="lbl-bg" x="196" y="44" width="196" height="14"/><text class="lbl" x="200" y="55">POST /leave/apply · Bearer JWT</text>
+          <path class="edge-plain" marker-end="url(#f4a)" d="M690 60 H896"/>
+          <rect class="lbl-bg" x="712" y="44" width="168" height="14"/><text class="lbl" x="716" y="55">INSERT leave_request · PENDING</text>
+        </svg>
+        <figcaption>Weekend days are excluded from <code>total_days</code>. Balance checks
+          subtract days already committed by <code>PENDING</code> requests, so two pending
+          applications cannot both consume the same allowance. <code>UNPAID</code> leave
+          skips the balance check.</figcaption>
+      </figure>
+      <ol class="steps">
+        <li>Frontend sends <code>POST /leave/apply</code> to <b>LeaveService</b> with leave type, start/end date and reason, plus the Bearer JWT.</li>
+        <li>LeaveService <b>validates the JWT</b> locally.</li>
+        <li>It checks the <b>PL / SL balance</b> for the year (accounting for pending requests) &mdash; <code>UNPAID</code> is always allowed.</li>
+        <li>It checks for any <b>overlapping</b> <code>PENDING</code>/<code>APPROVED</code> request, and that the dates are in the <b>future</b> with at least one working day.</li>
+        <li>If all checks pass it saves the request with status <b>PENDING</b> in <b>leaveservice_db</b> and returns the leave id and day count.</li>
+      </ol>
+    </article>
+
+    <!-- FLOW 5 -->
+    <article class="flow">
+      <div class="flow-head">
+        <span class="flow-no">FLOW 5</span>
+        <h3 class="flow-name">HR Approves Leave</h3>
+        <span class="flow-ep">PUT&nbsp;/leave/hr/approve/{id}</span>
+      </div>
+      <figure>
+        <svg viewBox="0 0 1120 120" role="img"
+             aria-label="HR approve flow. The HR frontend sends PUT /leave/hr/approve/{id} with the Bearer JWT. LeaveService validates the token and the HR role, sets the request status to APPROVED, and deducts the days from the matching LeaveBalance, all in leaveservice_db.">
+          <defs><marker id="f5a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>
+          <rect class="node" x="20" y="36" width="160" height="48" rx="10" fill="var(--c-fe-fill)"/>
+          <text class="t-strong" x="100" y="57" text-anchor="middle">Frontend · HR</text>
+          <text class="t-mono" x="100" y="73" text-anchor="middle">leave queue</text>
+
+          <rect class="node" x="430" y="18" width="260" height="84" rx="10" fill="var(--c-lv-fill)"/>
+          <text class="t-strong" x="560" y="39" text-anchor="middle">LeaveService</text>
+          <text class="t-mono" x="560" y="55" text-anchor="middle">verify JWT + role = HR</text>
+          <text class="t-mono" x="560" y="69" text-anchor="middle">status → APPROVED · deduct balance</text>
+          <text class="t-mono" x="560" y="83" text-anchor="middle">:8083</text>
+
+          <path d="M900 40 a44 11 0 0 0 88 0 v40 a44 11 0 0 1 -88 0 z" fill="var(--c-db)"/>
+          <ellipse cx="944" cy="40" rx="44" ry="11" fill="var(--c-db)"/>
+          <text x="944" y="66" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="8">leave_request</text>
+          <text x="944" y="78" text-anchor="middle" fill="var(--c-db-ink)" font-family="var(--mono)" font-size="8">+ leave_balance</text>
+
+          <path class="edge-plain" marker-end="url(#f5a)" d="M180 60 H426"/>
+          <rect class="lbl-bg" x="196" y="44" width="220" height="14"/><text class="lbl" x="200" y="55">PUT /leave/hr/approve/{id} · Bearer JWT</text>
+          <path class="edge-plain" marker-end="url(#f5a)" d="M690 60 H896"/>
+          <rect class="lbl-bg" x="712" y="44" width="176" height="14"/><text class="lbl" x="716" y="55">UPDATE status + pl_used / sl_used</text>
+        </svg>
+        <figcaption>The balance is re-checked at approval time: if the employee no longer has
+          enough PL/SL the approval fails rather than driving the balance negative. Rejection
+          (<code>PUT /leave/hr/reject/{id}</code>) instead stores the HR reason in
+          <code>remarks</code>.</figcaption>
+      </figure>
+      <ol class="steps">
+        <li>HR frontend sends <code>PUT /leave/hr/approve/{id}</code> to <b>LeaveService</b> with the Bearer JWT.</li>
+        <li>LeaveService <b>validates the JWT</b> and enforces <b>role = HR</b> (an <code>EMPLOYEE</code> token gets <code>403</code>).</li>
+        <li>It confirms the request is still <b>PENDING</b> and re-checks the balance.</li>
+        <li>It sets the request <b>status to APPROVED</b> and records <code>approved_by</code>.</li>
+        <li>It <b>deducts the days</b> from the matching <code>LeaveBalance</code> (<code>pl_used</code> / <code>sl_used</code> / <code>unpaid_used</code>) in <b>leaveservice_db</b>.</li>
+      </ol>
+    </article>
+  </section>
+
+  <footer class="page">
+    Deployment: <code>docker compose up --build</code> starts six containers &mdash; MySQL,
+    ZooKeeper, Kafka, and the three services &mdash; on one bridge network. Each service also
+    runs standalone with <code>./mvnw spring-boot:run</code> against a local MySQL and Kafka.
+  </footer>
+
+</div>
