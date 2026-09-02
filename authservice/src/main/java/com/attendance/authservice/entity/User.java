@@ -59,6 +59,9 @@ public class User {
     @Column(nullable = false, length = 60)
     private String department;
 
+    @Column(nullable = true)
+    private Double salary;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

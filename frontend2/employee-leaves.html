@@ -67,9 +67,20 @@
           </div>
           <div class="warn-box">
             <div class="warn-box-title">Leave deduction</div>
-            <div class="warn-box-row">
-              <div><div class="warn-box-num" id="unpaidDays">–</div><div class="warn-box-cap">unpaid days</div></div>
-              <div style="text-align:right"><div class="warn-box-num" id="deductAmount">–</div><div class="warn-box-cap" id="rateCap">this month</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+              <div style="display:flex;justify-content:space-between;font:500 12.5px var(--sans);color:var(--amber-dark)">
+                <span>Monthly Salary</span><span id="dedMonthlySalary">–</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font:500 12.5px var(--sans);color:var(--amber-dark)">
+                <span>Per Day (÷26)</span><span id="dedPerDay">–</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font:500 12.5px var(--sans);color:var(--amber-dark)">
+                <span>Unpaid Days</span><span id="dedUnpaidDays">–</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid #fde68a;padding-top:8px;margin-top:2px">
+                <span style="font:600 12.5px var(--sans);color:#92400e">Total Deduction</span>
+                <span class="warn-box-num" id="deductAmount" style="font-size:17px">–</span>
+              </div>
             </div>
           </div>
         </div>
@@ -164,12 +175,16 @@
   }
 
   function renderDeduction(d) {
+    const monthlySalary = num(pick(d, ["monthlySalary"]), 0) || 30000;
+    const perDaySalary = pick(d, ["perDaySalary", "deductionPerDay", "perDayRate", "dayRate", "ratePerDay"])
+      ?? (monthlySalary / 26).toFixed(2);
     const unpaid = num(pick(d, ["unpaidDays", "unpaidLeaveDays", "days"], 0));
-    const amount = pick(d, ["deductionAmount", "amount", "totalDeduction"], 0);
-    const rate = pick(d, ["perDayRate", "dayRate", "ratePerDay"]);
-    document.getElementById("unpaidDays").textContent = unpaid;
-    document.getElementById("deductAmount").textContent = formatMoney(amount);
-    document.getElementById("rateCap").textContent = rate ? `at ${formatMoney(rate)}/day` : "this month";
+    const total = num(pick(d, ["totalDeduction", "deductionAmount", "amount"], 0));
+
+    document.getElementById("dedMonthlySalary").textContent = formatMoney(monthlySalary);
+    document.getElementById("dedPerDay").textContent = formatMoney(Number(Number(perDaySalary).toFixed(2)));
+    document.getElementById("dedUnpaidDays").textContent = unpaid + (unpaid === 1 ? " day" : " days");
+    document.getElementById("deductAmount").textContent = formatMoney(total);
   }
 
   function renderLeaves(rows) {

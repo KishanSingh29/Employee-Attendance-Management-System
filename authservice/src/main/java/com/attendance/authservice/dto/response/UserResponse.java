@@ -13,6 +13,7 @@ public record UserResponse(
         String email,
         Role role,
         String department,
+        Double salary,
         LocalDateTime createdAt
 ) {
 
@@ -25,6 +26,7 @@ public record UserResponse(
                 user.getEmail(),
                 user.getRole(),
                 user.getDepartment(),
+                user.getSalary(),
                 user.getCreatedAt()
         );
     }

@@ -81,6 +81,10 @@
             </select>
           </label>
         </div>
+        <label class="field">
+          <span class="field-label">Monthly Salary (₹)</span>
+          <input class="input" type="number" name="salary" id="salary" placeholder="e.g. 30000" min="1000" required>
+        </label>
         <button type="submit" class="btn btn-primary btn-block" id="registerBtn">Create account</button>
       </form>
 
@@ -119,6 +123,7 @@
     const confirmPassword = document.getElementById("confirmPassword").value;
     const role = document.getElementById("role").value;
     const department = document.getElementById("department").value;
+    const salary = parseFloat(document.getElementById("salary").value);
 
     const errs = [];
     if (!firstName) errs.push("First name is required.");
@@ -128,9 +133,14 @@
     if (password !== confirmPassword) errs.push("Password and confirmation do not match.");
     if (errs.length) return showErrors(errs);
 
+    if (!Number.isFinite(salary) || salary < 1000) {
+      showToast("Minimum salary ₹1000", "danger");
+      return;
+    }
+
     showLoading("registerBtn", "Creating account…");
     try {
-      await registerEmployee({ firstName, lastName, email, password, role, department });
+      await registerEmployee({ firstName, lastName, email, password, role, department, salary });
       okBox.textContent = `Account created for ${firstName} ${lastName} (${role}, ${department}). Redirecting to sign in…`;
       okBox.hidden = false;
       showToast("Registration successful. Please sign in.", "success");

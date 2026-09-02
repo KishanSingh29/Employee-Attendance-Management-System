@@ -14,7 +14,8 @@ public record UserRegisteredEvent(
         String lastName,
         String email,
         String department,
-        String role
+        String role,
+        Double salary
 ) {
 
     public static UserRegisteredEvent from(User user) {
@@ -25,6 +26,7 @@ public record UserRegisteredEvent(
                 user.getLastName(),
                 user.getEmail(),
                 user.getDepartment(),
-                user.getRole() != null ? user.getRole().name() : null);
+                user.getRole() != null ? user.getRole().name() : null,
+                user.getSalary());
     }
 }

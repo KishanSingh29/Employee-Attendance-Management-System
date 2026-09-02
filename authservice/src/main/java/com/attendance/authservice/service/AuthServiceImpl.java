@@ -72,6 +72,7 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode(request.password()))
                 .role(request.role())
                 .department(request.department().trim())
+                .salary(request.salary())
                 .build();
 
         User saved = userRepository.save(user);

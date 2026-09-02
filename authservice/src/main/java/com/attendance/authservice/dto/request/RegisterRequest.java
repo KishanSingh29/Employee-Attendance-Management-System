@@ -2,6 +2,7 @@ package com.attendance.authservice.dto.request;
 
 import com.attendance.authservice.entity.Role;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -30,6 +31,10 @@ public record RegisterRequest(
 
         @NotBlank(message = "Department is required")
         @Size(max = 60, message = "Department must not exceed 60 characters")
-        String department
+        String department,
+
+        @NotNull(message = "Salary is required")
+        @Min(value = 1000, message = "Minimum salary 1000")
+        Double salary
 ) {
 }
