@@ -121,7 +121,7 @@
   yearSel.innerHTML = yearOptions(getCurrentYear());
 
   function renderSummary(s) {
-    const present = num(pick(s, ["totalPresent", "present", "presentDays", "presentCount"], 0));
+    const present = (num(pick(s, ["totalPresent", "present", "presentDays", "presentCount"], 0))) + (num(pick(s, ["totalLate", "late", "lateDays", "lateCount"], 0))) + (num(pick(s, ["totalHalfDay", "halfDay", "halfDays", "halfDayCount"], 0)));
     const absent = num(pick(s, ["totalAbsent", "absent", "absentDays", "absentCount"], 0));
     const late = num(pick(s, ["totalLate", "late", "lateDays", "lateCount"], 0));
     const hours = pick(s, ["totalWorkingHours", "workingHours", "totalHours", "hours"], 0);
