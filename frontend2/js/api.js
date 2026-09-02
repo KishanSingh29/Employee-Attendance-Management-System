@@ -44,3 +44,4 @@ async function hrRejectLeave(id, reason) { return apiCall(LEAVE_URL + `/leave/hr
 async function hrGetAllLeaves(status) { return apiCall(LEAVE_URL + `/leave/hr/all${status ? "?status="+status : ""}`); }
 async function hrGetEmployeeLeaveBalance(userId, year) { return apiCall(LEAVE_URL + `/leave/hr/employee/${userId}/balance?year=${year}`); }
 async function hrGetLeaveReport(month, year) { return apiCall(LEAVE_URL + `/leave/hr/report?month=${month}&year=${year}`); }
+async function hrUpdateEmployeeSalary(userId, salary) { return apiCall(LEAVE_URL + `/leave/hr/employee/${userId}/salary`, "PUT", { salary }, true); }
