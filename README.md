@@ -653,3 +653,45 @@ attendance-management/
         ├── api.js                    # every endpoint as a typed fetch wrapper
         └── utils.js                  # formatting, toasts, table/empty-state helpers
 ```
+
+---
+
+## Future Enhancements
+
+The following features are planned for future development:
+
+### Phase 2 — Advanced Features
+
+- **Push Notifications** — Real-time alerts for leave approval / rejection via Firebase.
+- **Email Notifications** — Automated email on check-in and leave status updates.
+- **Shift Management** — Multiple shift support (morning / evening / night).
+- **Overtime Tracking** — Auto-detect and log overtime hours.
+- **Holiday Calendar** — National / company holidays integration.
+
+### Phase 3 — Analytics & Reporting
+
+- **Advanced Analytics Dashboard** — Charts and graphs for attendance trends.
+- **Payroll Integration** — Auto-generate payroll from attendance and deductions.
+- **Department-wise Reports** — Detailed per-department analytics.
+- **Export to Excel / PDF** — Full report export functionality.
+
+### Phase 4 — Infrastructure
+
+- **Redis Caching** — Cache frequently accessed data for better performance.
+- **GCP Cloud Run Deployment** — Production deployment on Google Cloud.
+- **GitHub Actions CI/CD** — Automated build and deployment pipeline.
+- **Kubernetes Orchestration** — Container orchestration for scaling.
+- **API Gateway** — Single entry point for all microservices.
+
+### Phase 5 — Mobile App
+
+- **React Native Mobile App** — Cross-platform mobile application.
+- **GPS-based Attendance** — Location verification for check-in.
+- **Face Recognition** — Biometric attendance marking.
+- **Offline Support** — Work without an internet connection.
+
+---
+
+*Built with passion by Kishan Singh*
+*4th Year IT Student, Haldia Institute of Technology*
+*Open to internship opportunities in Backend + AI Engineering*
