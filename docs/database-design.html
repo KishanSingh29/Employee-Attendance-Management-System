@@ -1,0 +1,495 @@
+<meta charset="utf-8">
+<title>AttendTrack Database Design</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --surface:#ffffff;
+    --surface-2:#fbfcfd;
+    --ink:#1b202a;
+    --ink-soft:#586173;
+    --hair:#e2e5ec;
+    --grid:#eceef3;
+
+    --c-auth:#0f9d6e;  --c-auth-fill:#e7f6f0;
+    --c-att:#7c3aed;   --c-att-fill:#f1ebfd;
+    --c-lv:#e2620c;    --c-lv-fill:#fcefe3;
+
+    --ref:#5b57e0;     --ref-fill:#ecebfd;
+
+    --radius:12px;
+    --sans:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#0e1116;
+      --surface:#151a22;
+      --surface-2:#121820;
+      --ink:#e7eaf0;
+      --ink-soft:#98a2b3;
+      --hair:#262c37;
+      --grid:#1b212b;
+
+      --c-auth:#2bb98a;  --c-auth-fill:#0f3229;
+      --c-att:#a480f7;   --c-att-fill:#241539;
+      --c-lv:#f2803f;    --c-lv-fill:#38230f;
+
+      --ref:#9a97f4;     --ref-fill:#20213f;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1116;
+    --surface:#151a22;
+    --surface-2:#121820;
+    --ink:#e7eaf0;
+    --ink-soft:#98a2b3;
+    --hair:#262c37;
+    --grid:#1b212b;
+
+    --c-auth:#2bb98a;  --c-auth-fill:#0f3229;
+    --c-att:#a480f7;   --c-att-fill:#241539;
+    --c-lv:#f2803f;    --c-lv-fill:#38230f;
+
+    --ref:#9a97f4;     --ref-fill:#20213f;
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.6;
+    font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:56px 28px 96px}
+
+  header.page{border-bottom:1px solid var(--hair);padding-bottom:26px;margin-bottom:40px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 12px}
+  h1{font-size:clamp(30px,4.6vw,44px);line-height:1.1;font-weight:700;letter-spacing:-.02em;text-wrap:balance;margin:0 0 14px}
+  header.page p{margin:0;max-width:66ch;color:var(--ink-soft);font-size:16.5px}
+  .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+  .meta code{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--hair);border-radius:999px;padding:4px 11px}
+
+  section{margin-top:52px}
+  h2{font-size:13px;font-family:var(--mono);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 6px}
+  .section-lead{margin:0 0 24px;color:var(--ink-soft);max-width:72ch;font-size:15px}
+
+  figure{margin:0;background:var(--surface);border:1px solid var(--hair);border-radius:var(--radius);padding:22px;overflow-x:auto}
+  figure svg{display:block;width:100%;height:auto;min-width:900px;color:var(--ink-soft)}
+  figcaption{margin-top:14px;padding-top:13px;border-top:1px solid var(--hair);font-size:13.5px;color:var(--ink-soft)}
+  figcaption code{font-family:var(--mono);font-size:12.5px}
+
+  /* ---- ER SVG classes ---- */
+  .er-dbtab{stroke-width:1.4}
+  .er-dbname{font-family:var(--mono);font-weight:600;font-size:12.5px}
+  .er-dbsub{font-family:var(--mono);font-size:9.5px;fill:var(--ink-soft)}
+  .er-th{fill:var(--ink);font-family:var(--sans);font-weight:600;font-size:12px}
+  .er-tcount{fill:var(--ink-soft);font-family:var(--mono);font-size:9px}
+  .er-thead{stroke:var(--hair);stroke-width:1.2}
+  .er-tbody{fill:var(--surface);stroke:var(--hair);stroke-width:1.2}
+  .er-rowline{stroke:var(--grid);stroke-width:1}
+  .er-col{fill:var(--ink);font-family:var(--sans);font-size:10.5px}
+  .er-type{fill:var(--ink-soft);font-family:var(--mono);font-size:9.5px}
+  .er-foot{fill:var(--ink-soft);font-family:var(--mono);font-size:9px}
+  .er-badge-t{font-family:var(--mono);font-size:8px;font-weight:600}
+  .er-pk{fill:var(--c-auth)}      .er-pk-t{fill:#fff}
+  .er-uq{fill:var(--hair)}        .er-uq-t{fill:var(--ink-soft)}
+  .er-fk{fill:var(--ref-fill)}    .er-fk-t{fill:var(--ref)}
+
+  .rel-fk{fill:none;stroke:currentColor;stroke-width:1.5;marker-end:url(#erArrow)}
+  .rel-ref{fill:none;stroke:var(--ref);stroke-width:1.4;stroke-dasharray:5 4;marker-end:url(#erRef)}
+  .rel-card{fill:var(--ink-soft);font-family:var(--mono);font-size:9px}
+  .rail-bg{fill:var(--surface)}
+  .rail-t{fill:var(--ink);font-family:var(--mono);font-size:10px}
+  .lbl-bg{fill:var(--surface)}
+  .lbl{fill:var(--ink-soft);font-family:var(--mono);font-size:9px}
+
+  /* ---- legend (shared style) ---- */
+  .legend{display:grid;grid-template-columns:1fr 1fr;gap:26px 40px;background:var(--surface);border:1px solid var(--hair);border-radius:var(--radius);padding:24px 26px}
+  .legend h3{margin:0 0 12px;font-size:11px;font-family:var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
+  .legend ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px}
+  .legend li{display:flex;align-items:flex-start;gap:12px;font-size:13.5px}
+  .legend li > span:last-child{flex:1}
+  .swatch{width:26px;height:16px;border-radius:5px;flex:none;margin-top:2px;border:1px solid rgba(120,120,120,.25)}
+  .line-key{width:36px;flex:none;margin-top:9px;height:0}
+  .line-solid{border-top:2px solid var(--ink-soft)}
+  .line-dashed{border-top:2px dashed var(--ref)}
+  .kb{display:inline-grid;place-items:center;width:22px;height:14px;border-radius:4px;font-family:var(--mono);font-size:8.5px;font-weight:600;flex:none;margin-top:2px}
+  .kb-pk{background:var(--c-auth);color:#fff}
+  .kb-uq{background:var(--hair);color:var(--ink-soft)}
+  .kb-fk{background:var(--ref-fill);color:var(--ref)}
+  .legend code{font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+
+  .note{
+    margin-top:26px;background:var(--surface-2);border:1px solid var(--hair);
+    border-left:3px solid var(--ref);border-radius:10px;padding:16px 20px;
+    font-size:14px;color:var(--ink-soft);
+  }
+  .note b{color:var(--ink);font-weight:600}
+  .note code{font-family:var(--mono);font-size:12.5px}
+
+  footer.page{margin-top:64px;padding-top:22px;border-top:1px solid var(--hair);font-size:13px;color:var(--ink-soft)}
+  footer.page code{font-family:var(--mono);font-size:12px}
+
+  @media (max-width:760px){
+    .wrap{padding:40px 18px 72px}
+    .legend{grid-template-columns:1fr;gap:22px}
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="page">
+    <p class="eyebrow">Data Model · Reference</p>
+    <h1>AttendTrack Database Design</h1>
+    <p>Entity–relationship model for the AttendTrack platform. Each of the three microservices
+      owns one MySQL schema and never reads another's tables — the only column they share is
+      <code>user_id</code>, the stable UUID minted by <code>authservice_db.users</code> and
+      copied outward through the <code>user-registered</code> Kafka event. One real foreign
+      key exists (<code>refresh_tokens → users</code>); every cross-schema link is a logical
+      reference with no database-level constraint.</p>
+    <div class="meta">
+      <code>MySQL 8</code>
+      <code>3 schemas</code>
+      <code>7 tables</code>
+      <code>Hibernate ddl-auto=update</code>
+    </div>
+  </header>
+
+  <section aria-labelledby="er-h">
+    <h2 id="er-h">Entity–Relationship Diagram</h2>
+    <p class="section-lead">Tables are grouped by owning schema and colour-coded to match the
+      architecture diagram: <b style="color:var(--c-auth)">authservice_db</b> (green),
+      <b style="color:var(--c-att)">attendanceservice_db</b> (purple),
+      <b style="color:var(--c-lv)">leaveservice_db</b> (orange).</p>
+
+    <figure>
+      <svg viewBox="0 0 1310 706" role="img"
+           aria-label="Entity-relationship diagram of the AttendTrack databases. authservice_db contains users (id primary key; user_id, employee_id and email unique; plus first_name, last_name, password, role, department, salary, created_at), refresh_tokens (id primary key; token unique; user_id foreign key to users.id; expires_at, revoked) and blacklisted_tokens (id primary key; jti unique; expires_at). attendanceservice_db contains employee_profiles (id primary key; user_id and employee_id unique; first_name, last_name, email, department, created_at) and attendance (id primary key; user_id, date, check_in, check_out, working_hours, status; unique on user_id plus date). leaveservice_db contains leave_balance (id primary key; user_id and year form a composite unique; pl_total, pl_used, sl_total, sl_used, unpaid_used, monthly_salary, created_at) and leave_request (id primary key; user_id, employee_id, first_name, last_name, leave_type, start_date, end_date, total_days, reason, status, approved_by, remarks, applied_at, updated_at). refresh_tokens.user_id is a real foreign key to users.id. users.user_id is referenced by user_id in employee_profiles, attendance, leave_balance and leave_request, and by approved_by in leave_request, all as logical references with no foreign key constraint. Within leaveservice_db, approving a leave_request updates the pl_used, sl_used or unpaid_used counters on leave_balance.">
+        <defs>
+          <marker id="erArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+          </marker>
+          <marker id="erRef" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0 1 L9 5 L0 9" fill="none" stroke="var(--ref)" stroke-width="1.6"/>
+          </marker>
+        </defs>
+
+        <!-- ============ cross-service reference bus (drawn first, behind boxes) ============ -->
+        <path class="rel-ref" d="M344 139 H392 V44 H1250"/>
+        <path class="rel-ref" d="M424 44 V139 H472"/>
+        <path class="rel-ref" d="M440 44 V347 H472"/>
+        <path class="rel-ref" d="M858 44 V139 H904"/>
+        <path class="rel-ref" d="M854 44 V391 H904"/>
+        <path class="rel-ref" d="M850 44 V571 H904"/>
+        <rect class="rail-bg" x="470" y="34" width="330" height="16"/>
+        <text class="rail-t" x="476" y="46">user_id &mdash; cross-service logical reference (no DB foreign key)</text>
+        <text class="rel-card" x="350" y="134">1</text>
+        <text class="rel-card" x="458" y="135">1</text>
+        <text class="rel-card" x="458" y="343">N</text>
+        <text class="rel-card" x="874" y="135">N</text>
+        <text class="rel-card" x="874" y="387">N</text>
+        <text class="rel-card" x="874" y="567">N</text>
+
+        <!-- internal dashed: leave_request updates leave_balance -->
+        <path class="rel-ref" d="M1244 553 C1286 553 1286 193 1250 193"/>
+        <text class="lbl" x="1260" y="378" transform="rotate(-90 1260 378)" text-anchor="middle">on APPROVE &rarr; *_used</text>
+
+        <!-- real FK: refresh_tokens.user_id -> users.id -->
+        <path class="rel-fk" d="M38 407 H14 V121 H38"/>
+        <text class="rel-card" x="22" y="399">N</text>
+        <text class="rel-card" x="22" y="118">1</text>
+        <rect class="lbl-bg" x="6" y="256" width="16" height="26" transform="rotate(-90 14 269)"/>
+        <text class="lbl" x="14" y="272" text-anchor="middle" transform="rotate(-90 14 269)">FK</text>
+
+        <!-- ============ authservice_db ============ -->
+        <rect x="20" y="60" width="344" height="524" rx="12" fill="none" stroke="var(--c-auth)" class="er-dbtab"/>
+        <rect x="20" y="60" width="344" height="24" rx="12" fill="var(--c-auth-fill)" stroke="var(--c-auth)" class="er-dbtab"/>
+        <rect x="20" y="72" width="344" height="12" fill="var(--c-auth-fill)"/>
+        <text class="er-dbname" x="34" y="77" fill="var(--c-auth)">authservice_db</text>
+        <text class="er-dbsub" x="352" y="77" text-anchor="end">MySQL 8</text>
+
+        <!-- users -->
+        <g transform="translate(40,88)">
+          <rect class="er-thead" x="0" y="0" width="304" height="24" rx="6" fill="var(--c-auth-fill)"/>
+          <rect x="0" y="12" width="304" height="12" fill="var(--c-auth-fill)"/>
+          <text class="er-th" x="12" y="16">users</text>
+          <text class="er-tcount" x="292" y="16" text-anchor="end">11 cols</text>
+          <rect class="er-tbody" x="0" y="24" width="304" height="198" rx="6"/>
+          <rect x="0" y="24" width="304" height="8" fill="var(--surface)"/>
+
+          <rect class="er-pk" x="8" y="27" width="24" height="12" rx="3"/><text class="er-badge-t er-pk-t" x="20" y="36" text-anchor="middle">PK</text>
+          <text class="er-col" x="40" y="37">id</text><text class="er-type" x="294" y="37" text-anchor="end">BIGINT</text>
+          <line class="er-rowline" x1="0" y1="42" x2="304" y2="42"/>
+          <rect class="er-uq" x="8" y="45" width="24" height="12" rx="3"/><text class="er-badge-t er-uq-t" x="20" y="54" text-anchor="middle">UQ</text>
+          <text class="er-col" x="40" y="55">user_id</text><text class="er-type" x="294" y="55" text-anchor="end">VARCHAR(36)</text>
+          <line class="er-rowline" x1="0" y1="60" x2="304" y2="60"/>
+          <rect class="er-uq" x="8" y="63" width="24" height="12" rx="3"/><text class="er-badge-t er-uq-t" x="20" y="72" text-anchor="middle">UQ</text>
+          <text class="er-col" x="40" y="73">employee_id</text><text class="er-type" x="294" y="73" text-anchor="end">VARCHAR(20)</text>
+          <line class="er-rowline" x1="0" y1="78" x2="304" y2="78"/>
+          <text class="er-col" x="40" y="91">first_name</text><text class="er-type" x="294" y="91" text-anchor="end">VARCHAR(50)</text>
+          <line class="er-rowline" x1="0" y1="96" x2="304" y2="96"/>
+          <text class="er-col" x="40" y="109">last_name</text><text class="er-type" x="294" y="109" text-anchor="end">VARCHAR(50)</text>
+          <line class="er-rowline" x1="0" y1="114" x2="304" y2="114"/>
+          <rect class="er-uq" x="8" y="117" width="24" height="12" rx="3"/><text class="er-badge-t er-uq-t" x="20" y="126" text-anchor="middle">UQ</text>
+          <text class="er-col" x="40" y="127">email</text><text class="er-type" x="294" y="127" text-anchor="end">VARCHAR(120)</text>
+          <line class="er-rowline" x1="0" y1="132" x2="304" y2="132"/>
+          <text class="er-col" x="40" y="145">password</text><text class="er-type" x="294" y="145" text-anchor="end">VARCHAR(255)</text>
+          <line class="er-rowline" x1="0" y1="150" x2="304" y2="150"/>
+          <text class="er-col" x="40" y="163">role</text><text class="er-type" x="294" y="163" text-anchor="end">VARCHAR(20) · CHECK</text>
+          <line class="er-rowline" x1="0" y1="168" x2="304" y2="168"/>
+          <text class="er-col" x="40" y="181">department</text><text class="er-type" x="294" y="181" text-anchor="end">VARCHAR(60)</text>
+          <line class="er-rowline" x1="0" y1="186" x2="304" y2="186"/>
+          <text class="er-col" x="40" y="199">salary</text><text class="er-type" x="294" y="199" text-anchor="end">DOUBLE · null</text>
+          <line class="er-rowline" x1="0" y1="204" x2="304" y2="204"/>
+          <text class="er-col" x="40" y="217">created_at</text><text class="er-type" x="294" y="217" text-anchor="end">DATETIME(6)</text>
+        </g>
+
+        <!-- refresh_tokens -->
+        <g transform="translate(40,338)">
+          <rect class="er-thead" x="0" y="0" width="304" height="24" rx="6" fill="var(--c-auth-fill)"/>
+          <rect x="0" y="12" width="304" height="12" fill="var(--c-auth-fill)"/>
+          <text class="er-th" x="12" y="16">refresh_tokens</text>
+          <text class="er-tcount" x="292" y="16" text-anchor="end">5 cols</text>
+          <rect class="er-tbody" x="0" y="24" width="304" height="90" rx="6"/>
+          <rect x="0" y="24" width="304" height="8" fill="var(--surface)"/>
+
+          <rect class="er-pk" x="8" y="27" width="24" height="12" rx="3"/><text class="er-badge-t er-pk-t" x="20" y="36" text-anchor="middle">PK</text>
+          <text class="er-col" x="40" y="37">id</text><text class="er-type" x="294" y="37" text-anchor="end">BIGINT</text>
+          <line class="er-rowline" x1="0" y1="42" x2="304" y2="42"/>
+          <rect class="er-uq" x="8" y="45" width="24" height="12" rx="3"/><text class="er-badge-t er-uq-t" x="20" y="54" text-anchor="middle">UQ</text>
+          <text class="er-col" x="40" y="55">token</text><text class="er-type" x="294" y="55" text-anchor="end">VARCHAR(36)</text>
+          <line class="er-rowline" x1="0" y1="60" x2="304" y2="60"/>
+          <rect class="er-fk" x="8" y="63" width="24" height="12" rx="3"/><text class="er-badge-t er-fk-t" x="20" y="72" text-anchor="middle">FK</text>
+          <text class="er-col" x="40" y="73">user_id</text><text class="er-type" x="294" y="73" text-anchor="end">BIGINT &rarr; users.id</text>
+          <line class="er-rowline" x1="0" y1="78" x2="304" y2="78"/>
+          <text class="er-col" x="40" y="91">expires_at</text><text class="er-type" x="294" y="91" text-anchor="end">DATETIME(6)</text>
+          <line class="er-rowline" x1="0" y1="96" x2="304" y2="96"/>
+          <text class="er-col" x="40" y="109">revoked</text><text class="er-type" x="294" y="109" text-anchor="end">BIT(1)</text>
+        </g>
+
+        <!-- blacklisted_tokens -->
+        <g transform="translate(40,480)">
+          <rect class="er-thead" x="0" y="0" width="304" height="24" rx="6" fill="var(--c-auth-fill)"/>
+          <rect x="0" y="12" width="304" height="12" fill="var(--c-auth-fill)"/>
+          <text class="er-th" x="12" y="16">blacklisted_tokens</text>
+          <text class="er-tcount" x="292" y="16" text-anchor="end">3 cols</text>
+          <rect class="er-tbody" x="0" y="24" width="304" height="54" rx="6"/>
+          <rect x="0" y="24" width="304" height="8" fill="var(--surface)"/>
+
+          <rect class="er-pk" x="8" y="27" width="24" height="12" rx="3"/><text class="er-badge-t er-pk-t" x="20" y="36" text-anchor="middle">PK</text>
+          <text class="er-col" x="40" y="37">id</text><text class="er-type" x="294" y="37" text-anchor="end">BIGINT</text>
+          <line class="er-rowline" x1="0" y1="42" x2="304" y2="42"/>
+          <rect class="er-uq" x="8" y="45" width="24" height="12" rx="3"/><text class="er-badge-t er-uq-t" x="20" y="54" text-anchor="middle">UQ</text>
+          <text class="er-col" x="40" y="55">jti</text><text class="er-type" x="294" y="55" text-anchor="end">VARCHAR(64)</text>
+          <line class="er-rowline" x1="0" y1="60" x2="304" y2="60"/>
+          <text class="er-col" x="40" y="73">expires_at</text><text class="er-type" x="294" y="73" text-anchor="end">DATETIME(6)</text>
+        </g>
+
+        <!-- ============ attendanceservice_db ============ -->
+        <rect x="452" y="60" width="344" height="424" rx="12" fill="none" stroke="var(--c-att)" class="er-dbtab"/>
+        <rect x="452" y="60" width="344" height="24" rx="12" fill="var(--c-att-fill)" stroke="var(--c-att)" class="er-dbtab"/>
+        <rect x="452" y="72" width="344" height="12" fill="var(--c-att-fill)"/>
+        <text class="er-dbname" x="466" y="77" fill="var(--c-att)">attendanceservice_db</text>
+        <text class="er-dbsub" x="784" y="77" text-anchor="end">MySQL 8</text>
+
+        <!-- employee_profiles -->
+        <g transform="translate(472,88)">
+          <rect class="er-thead" x="0" y="0" width="304" height="24" rx="6" fill="var(--c-att-fill)"/>
+          <rect x="0" y="12" width="304" height="12" fill="var(--c-att-fill)"/>
+          <text class="er-th" x="12" y="16">employee_profiles</text>
+          <text class="er-tcount" x="292" y="16" text-anchor="end">8 cols</text>
+          <rect class="er-tbody" x="0" y="24" width="304" height="144" rx="6"/>
+          <rect x="0" y="24" width="304" height="8" fill="var(--surface)"/>
+
+          <rect class="er-pk" x="8" y="27" width="24" height="12" rx="3"/><text class="er-badge-t er-pk-t" x="20" y="36" text-anchor="middle">PK</text>
+          <text class="er-col" x="40" y="37">id</text><text class="er-type" x="294" y="37" text-anchor="end">BIGINT</text>
+          <line class="er-rowline" x1="0" y1="42" x2="304" y2="42"/>
+          <rect class="er-uq" x="8" y="45" width="24" height="12" rx="3"/><text class="er-badge-t er-uq-t" x="20" y="54" text-anchor="middle">UQ</text>
+          <text class="er-col" x="40" y="55">user_id</text><text class="er-type" x="294" y="55" text-anchor="end">VARCHAR(36)</text>
+          <line class="er-rowline" x1="0" y1="60" x2="304" y2="60"/>
+          <rect class="er-uq" x="8" y="63" width="24" height="12" rx="3"/><text class="er-badge-t er-uq-t" x="20" y="72" text-anchor="middle">UQ</text>
+          <text class="er-col" x="40" y="73">employee_id</text><text class="er-type" x="294" y="73" text-anchor="end">VARCHAR(20)</text>
+          <line class="er-rowline" x1="0" y1="78" x2="304" y2="78"/>
+          <text class="er-col" x="40" y="91">first_name</text><text class="er-type" x="294" y="91" text-anchor="end">VARCHAR(50)</text>
+          <line class="er-rowline" x1="0" y1="96" x2="304" y2="96"/>
+          <text class="er-col" x="40" y="109">last_name</text><text class="er-type" x="294" y="109" text-anchor="end">VARCHAR(50)</text>
+          <line class="er-rowline" x1="0" y1="114" x2="304" y2="114"/>
+          <text class="er-col" x="40" y="127">email</text><text class="er-type" x="294" y="127" text-anchor="end">VARCHAR(120)</text>
+          <line class="er-rowline" x1="0" y1="132" x2="304" y2="132"/>
+          <text class="er-col" x="40" y="145">department</text><text class="er-type" x="294" y="145" text-anchor="end">VARCHAR(60)</text>
+          <line class="er-rowline" x1="0" y1="150" x2="304" y2="150"/>
+          <text class="er-col" x="40" y="163">created_at</text><text class="er-type" x="294" y="163" text-anchor="end">DATETIME(6)</text>
+        </g>
+
+        <!-- attendance -->
+        <g transform="translate(472,296)">
+          <rect class="er-thead" x="0" y="0" width="304" height="24" rx="6" fill="var(--c-att-fill)"/>
+          <rect x="0" y="12" width="304" height="12" fill="var(--c-att-fill)"/>
+          <text class="er-th" x="12" y="16">attendance</text>
+          <text class="er-tcount" x="292" y="16" text-anchor="end">7 cols</text>
+          <rect class="er-tbody" x="0" y="24" width="304" height="144" rx="6"/>
+          <rect x="0" y="24" width="304" height="8" fill="var(--surface)"/>
+
+          <rect class="er-pk" x="8" y="27" width="24" height="12" rx="3"/><text class="er-badge-t er-pk-t" x="20" y="36" text-anchor="middle">PK</text>
+          <text class="er-col" x="40" y="37">id</text><text class="er-type" x="294" y="37" text-anchor="end">BIGINT</text>
+          <line class="er-rowline" x1="0" y1="42" x2="304" y2="42"/>
+          <text class="er-col" x="40" y="55">user_id</text><text class="er-type" x="294" y="55" text-anchor="end">VARCHAR(36)</text>
+          <line class="er-rowline" x1="0" y1="60" x2="304" y2="60"/>
+          <text class="er-col" x="40" y="73">date</text><text class="er-type" x="294" y="73" text-anchor="end">DATE</text>
+          <line class="er-rowline" x1="0" y1="78" x2="304" y2="78"/>
+          <text class="er-col" x="40" y="91">check_in</text><text class="er-type" x="294" y="91" text-anchor="end">TIME(6) · null</text>
+          <line class="er-rowline" x1="0" y1="96" x2="304" y2="96"/>
+          <text class="er-col" x="40" y="109">check_out</text><text class="er-type" x="294" y="109" text-anchor="end">TIME(6) · null</text>
+          <line class="er-rowline" x1="0" y1="114" x2="304" y2="114"/>
+          <text class="er-col" x="40" y="127">working_hours</text><text class="er-type" x="294" y="127" text-anchor="end">DOUBLE · null</text>
+          <line class="er-rowline" x1="0" y1="132" x2="304" y2="132"/>
+          <text class="er-col" x="40" y="145">status</text><text class="er-type" x="294" y="145" text-anchor="end">VARCHAR(20) · CHECK</text>
+          <line class="er-rowline" x1="0" y1="150" x2="304" y2="150"/>
+          <text class="er-foot" x="40" y="163">UNIQUE (user_id, date)</text>
+        </g>
+
+        <!-- ============ leaveservice_db ============ -->
+        <rect x="884" y="60" width="360" height="600" rx="12" fill="none" stroke="var(--c-lv)" class="er-dbtab"/>
+        <rect x="884" y="60" width="360" height="24" rx="12" fill="var(--c-lv-fill)" stroke="var(--c-lv)" class="er-dbtab"/>
+        <rect x="884" y="72" width="360" height="12" fill="var(--c-lv-fill)"/>
+        <text class="er-dbname" x="898" y="77" fill="var(--c-lv)">leaveservice_db</text>
+        <text class="er-dbsub" x="1232" y="77" text-anchor="end">MySQL 8</text>
+
+        <!-- leave_balance -->
+        <g transform="translate(904,88)">
+          <rect class="er-thead" x="0" y="0" width="320" height="24" rx="6" fill="var(--c-lv-fill)"/>
+          <rect x="0" y="12" width="320" height="12" fill="var(--c-lv-fill)"/>
+          <text class="er-th" x="12" y="16">leave_balance</text>
+          <text class="er-tcount" x="308" y="16" text-anchor="end">10 cols</text>
+          <rect class="er-tbody" x="0" y="24" width="320" height="198" rx="6"/>
+          <rect x="0" y="24" width="320" height="8" fill="var(--surface)"/>
+
+          <rect class="er-pk" x="8" y="27" width="24" height="12" rx="3"/><text class="er-badge-t er-pk-t" x="20" y="36" text-anchor="middle">PK</text>
+          <text class="er-col" x="40" y="37">id</text><text class="er-type" x="310" y="37" text-anchor="end">BIGINT</text>
+          <line class="er-rowline" x1="0" y1="42" x2="320" y2="42"/>
+          <rect class="er-uq" x="8" y="45" width="24" height="12" rx="3"/><text class="er-badge-t er-uq-t" x="20" y="54" text-anchor="middle">UQ*</text>
+          <text class="er-col" x="40" y="55">user_id</text><text class="er-type" x="310" y="55" text-anchor="end">VARCHAR(36)</text>
+          <line class="er-rowline" x1="0" y1="60" x2="320" y2="60"/>
+          <rect class="er-uq" x="8" y="63" width="24" height="12" rx="3"/><text class="er-badge-t er-uq-t" x="20" y="72" text-anchor="middle">UQ*</text>
+          <text class="er-col" x="40" y="73">year</text><text class="er-type" x="310" y="73" text-anchor="end">INT</text>
+          <line class="er-rowline" x1="0" y1="78" x2="320" y2="78"/>
+          <text class="er-col" x="40" y="91">pl_total</text><text class="er-type" x="310" y="91" text-anchor="end">INT · default 12</text>
+          <line class="er-rowline" x1="0" y1="96" x2="320" y2="96"/>
+          <text class="er-col" x="40" y="109">pl_used</text><text class="er-type" x="310" y="109" text-anchor="end">INT</text>
+          <line class="er-rowline" x1="0" y1="114" x2="320" y2="114"/>
+          <text class="er-col" x="40" y="127">sl_total</text><text class="er-type" x="310" y="127" text-anchor="end">INT · default 6</text>
+          <line class="er-rowline" x1="0" y1="132" x2="320" y2="132"/>
+          <text class="er-col" x="40" y="145">sl_used</text><text class="er-type" x="310" y="145" text-anchor="end">INT</text>
+          <line class="er-rowline" x1="0" y1="150" x2="320" y2="150"/>
+          <text class="er-col" x="40" y="163">unpaid_used</text><text class="er-type" x="310" y="163" text-anchor="end">INT</text>
+          <line class="er-rowline" x1="0" y1="168" x2="320" y2="168"/>
+          <text class="er-col" x="40" y="181">monthly_salary</text><text class="er-type" x="310" y="181" text-anchor="end">DOUBLE · default 30000</text>
+          <line class="er-rowline" x1="0" y1="186" x2="320" y2="186"/>
+          <text class="er-col" x="40" y="199">created_at</text><text class="er-type" x="310" y="199" text-anchor="end">DATETIME(6)</text>
+          <line class="er-rowline" x1="0" y1="204" x2="320" y2="204"/>
+          <text class="er-foot" x="40" y="217">UNIQUE (user_id, year)</text>
+        </g>
+
+        <!-- leave_request -->
+        <g transform="translate(904,340)">
+          <rect class="er-thead" x="0" y="0" width="320" height="24" rx="6" fill="var(--c-lv-fill)"/>
+          <rect x="0" y="12" width="320" height="12" fill="var(--c-lv-fill)"/>
+          <text class="er-th" x="12" y="16">leave_request</text>
+          <text class="er-tcount" x="308" y="16" text-anchor="end">15 cols</text>
+          <rect class="er-tbody" x="0" y="24" width="320" height="270" rx="6"/>
+          <rect x="0" y="24" width="320" height="8" fill="var(--surface)"/>
+
+          <rect class="er-pk" x="8" y="27" width="24" height="12" rx="3"/><text class="er-badge-t er-pk-t" x="20" y="36" text-anchor="middle">PK</text>
+          <text class="er-col" x="40" y="37">id</text><text class="er-type" x="310" y="37" text-anchor="end">BIGINT</text>
+          <line class="er-rowline" x1="0" y1="42" x2="320" y2="42"/>
+          <text class="er-col" x="40" y="55">user_id</text><text class="er-type" x="310" y="55" text-anchor="end">VARCHAR(36)</text>
+          <line class="er-rowline" x1="0" y1="60" x2="320" y2="60"/>
+          <text class="er-col" x="40" y="73">employee_id</text><text class="er-type" x="310" y="73" text-anchor="end">VARCHAR(20)</text>
+          <line class="er-rowline" x1="0" y1="78" x2="320" y2="78"/>
+          <text class="er-col" x="40" y="91">first_name</text><text class="er-type" x="310" y="91" text-anchor="end">VARCHAR(50)</text>
+          <line class="er-rowline" x1="0" y1="96" x2="320" y2="96"/>
+          <text class="er-col" x="40" y="109">last_name</text><text class="er-type" x="310" y="109" text-anchor="end">VARCHAR(50)</text>
+          <line class="er-rowline" x1="0" y1="114" x2="320" y2="114"/>
+          <text class="er-col" x="40" y="127">leave_type</text><text class="er-type" x="310" y="127" text-anchor="end">VARCHAR(20) · CHECK</text>
+          <line class="er-rowline" x1="0" y1="132" x2="320" y2="132"/>
+          <text class="er-col" x="40" y="145">start_date</text><text class="er-type" x="310" y="145" text-anchor="end">DATE</text>
+          <line class="er-rowline" x1="0" y1="150" x2="320" y2="150"/>
+          <text class="er-col" x="40" y="163">end_date</text><text class="er-type" x="310" y="163" text-anchor="end">DATE</text>
+          <line class="er-rowline" x1="0" y1="168" x2="320" y2="168"/>
+          <text class="er-col" x="40" y="181">total_days</text><text class="er-type" x="310" y="181" text-anchor="end">INT</text>
+          <line class="er-rowline" x1="0" y1="186" x2="320" y2="186"/>
+          <text class="er-col" x="40" y="199">reason</text><text class="er-type" x="310" y="199" text-anchor="end">VARCHAR(500) · null</text>
+          <line class="er-rowline" x1="0" y1="204" x2="320" y2="204"/>
+          <text class="er-col" x="40" y="217">status</text><text class="er-type" x="310" y="217" text-anchor="end">VARCHAR(20) · CHECK</text>
+          <line class="er-rowline" x1="0" y1="222" x2="320" y2="222"/>
+          <text class="er-col" x="40" y="235">approved_by</text><text class="er-type" x="310" y="235" text-anchor="end">VARCHAR(36) · null</text>
+          <line class="er-rowline" x1="0" y1="240" x2="320" y2="240"/>
+          <text class="er-col" x="40" y="253">remarks</text><text class="er-type" x="310" y="253" text-anchor="end">VARCHAR(500) · null</text>
+          <line class="er-rowline" x1="0" y1="258" x2="320" y2="258"/>
+          <text class="er-col" x="40" y="271">applied_at</text><text class="er-type" x="310" y="271" text-anchor="end">DATETIME(6)</text>
+          <line class="er-rowline" x1="0" y1="276" x2="320" y2="276"/>
+          <text class="er-col" x="40" y="289">updated_at</text><text class="er-type" x="310" y="289" text-anchor="end">DATETIME(6)</text>
+        </g>
+      </svg>
+      <figcaption>The one enforced foreign key is <code>refresh_tokens.user_id &rarr;
+        users.id</code> (N&nbsp;:&nbsp;1). Dashed indigo lines are logical joins on
+        <code>user_id</code> that cross a schema boundary — MySQL cannot enforce them, so the
+        services keep them consistent through the Kafka event and idempotent consumers.
+        There is one <code>leave_balance</code> row per employee <em>per year</em>
+        (<code>UNIQUE (user_id, year)</code>); <code>leave_request.approved_by</code> holds
+        the HR user's <code>user_id</code>. <code>employee_profiles</code> and
+        <code>leave_request</code> keep <code>first_name</code> / <code>last_name</code>
+        denormalised for reports. Enum columns (<code>role</code>, <code>status</code>,
+        <code>leave_type</code>) are <code>VARCHAR(20)</code> with a <code>CHECK</code>
+        constraint.</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="legend-h">
+    <h2 id="legend-h">Legend</h2>
+    <div class="legend">
+      <div>
+        <h3>Relationships</h3>
+        <ul>
+          <li><span class="line-key line-solid"></span><span><b>Foreign key</b> — enforced by MySQL. Exists only inside one schema: <code>refresh_tokens.user_id &rarr; users.id</code>.</span></li>
+          <li><span class="line-key line-dashed"></span><span><b>Logical reference</b> — the same <code>user_id</code> value with <b>no</b> <code>FOREIGN KEY</code> constraint. Every arrow that crosses a service / schema boundary.</span></li>
+          <li><span class="line-key" style="border-top:2px dashed var(--ref)"></span><span><b>Update on approve</b> — inside <code>leaveservice_db</code>, approving a <code>leave_request</code> writes back to the matching <code>leave_balance</code> counters.</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Column markers</h3>
+        <ul>
+          <li><span class="kb kb-pk">PK</span><span><b>Primary key</b> — <code>BIGINT AUTO_INCREMENT</code> on every table.</span></li>
+          <li><span class="kb kb-uq">UQ</span><span><b>Unique</b> constraint. <span class="kb kb-uq" style="width:26px">UQ*</span> marks a column that is part of a <b>composite</b> unique (<code>leave_balance (user_id, year)</code>).</span></li>
+          <li><span class="kb kb-fk">FK</span><span><b>Foreign key</b> column — points at another table's primary key within the same schema.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>Databases are never cross-queried.</b> Each service connects (JDBC) only to its own
+      schema — <code>authservice_db</code>, <code>attendanceservice_db</code>,
+      <code>leaveservice_db</code>. Identity data (<code>user_id</code>,
+      <code>employee_id</code>, names, department, salary) is replicated into
+      <code>employee_profiles</code> and <code>leave_balance</code> when the
+      <code>user-registered</code> Kafka event is consumed, and into
+      <code>leave_request</code> rows as they are created.
+    </div>
+  </section>
+
+  <footer class="page">
+    Schema is generated by Hibernate (<code>ddl-auto=update</code>) and mirrored in
+    <code>database/schema.sql</code>; demo rows in <code>database/sample-data.sql</code>.
+    See <code>docs/architecture.html</code> for the runtime / deployment view.
+  </footer>
+
+</div>
