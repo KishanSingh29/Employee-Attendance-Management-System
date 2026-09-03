@@ -1,4 +1,4 @@
-# AttendTrack — Employee Attendance Management System
+# AttendTrack — Employee Attendance Management System · Microservices
 
 AttendTrack is a microservices-based HR platform for daily attendance, leave management and
 payroll-day calculation. Employees check in / check out, track paid and sick leave balances,
