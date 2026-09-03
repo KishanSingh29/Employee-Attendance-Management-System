@@ -5,6 +5,7 @@ public record HrDashboardResponse(
         long presentToday,
         long absentToday,
         long onLeaveToday,
-        long lateToday
+        long lateToday,
+        long halfDayToday
 ) {
 }

@@ -150,7 +150,7 @@
         <td>${dayName(d)}</td>
         <td class="mono">${formatTime(inT)}</td>
         <td class="mono">${formatTime(outT)}</td>
-        <td class="mono">${formatHours(pick(r, ["workingHours", "workHours", "totalHours", "hours"]))}</td>
+        <td class="mono">${(inT && !outT) ? "In Progress" : formatHours(pick(r, ["workingHours", "workHours", "totalHours", "hours"]))}</td>
         <td>${getStatusBadge(pick(r, ["status"], "PRESENT"))}</td>
       </tr>`;
     }).join("");

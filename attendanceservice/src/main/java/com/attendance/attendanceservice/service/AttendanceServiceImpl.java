@@ -65,6 +65,10 @@ public class AttendanceServiceImpl implements AttendanceService {
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now().withNano(0);
 
+        // If the employee forgot to check out yesterday, close that record at 23:59
+        // before starting today's, so a missed check-out never blocks a new day.
+        autoCloseMissedCheckOut(user.userId(), today);
+
         Attendance attendance = attendanceRepository.findByUserIdAndDate(user.userId(), today)
                 .orElseGet(() -> Attendance.builder()
                         .userId(user.userId())
@@ -187,10 +191,11 @@ public class AttendanceServiceImpl implements AttendanceService {
         long totalEmployees = profileRepository.count();
         long presentToday = attendanceRepository.countByDateAndCheckInIsNotNull(today);
         long lateToday = attendanceRepository.countByDateAndStatus(today, AttendanceStatus.LATE);
+        long halfDayToday = attendanceRepository.countByDateAndStatus(today, AttendanceStatus.HALF_DAY);
         long onLeaveToday = attendanceRepository.countByDateAndStatus(today, AttendanceStatus.ON_LEAVE);
         long absentToday = Math.max(0, totalEmployees - presentToday - onLeaveToday);
 
-        return new HrDashboardResponse(totalEmployees, presentToday, absentToday, onLeaveToday, lateToday);
+        return new HrDashboardResponse(totalEmployees, presentToday, absentToday, onLeaveToday, lateToday, halfDayToday);
     }
 
     @Override
@@ -250,6 +255,39 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     private static double roundToTwo(double value) {
         return Math.round(value * 100.0) / 100.0;
+    }
+
+    /**
+     * If yesterday's record was left open (checked in, never checked out), auto-close it
+     * at 23:59 of that day: compute working hours and derive the status the same way a
+     * normal check-out would ({@code < halfDayHours} → HALF_DAY, otherwise keep LATE or PRESENT).
+     */
+    private void autoCloseMissedCheckOut(String userId, LocalDate today) {
+        LocalDate yesterday = today.minusDays(1);
+        attendanceRepository.findByUserIdAndDate(userId, yesterday).ifPresent(prev -> {
+            if (prev.getCheckIn() == null || prev.getCheckOut() != null) {
+                return;
+            }
+            LocalTime autoCheckOut = LocalTime.of(23, 59);
+            Duration worked = Duration.between(
+                    LocalDateTime.of(prev.getDate(), prev.getCheckIn()),
+                    LocalDateTime.of(prev.getDate(), autoCheckOut));
+            double workingHours = roundToTwo(Math.max(0, worked.toMinutes()) / 60.0);
+
+            AttendanceStatus status;
+            if (workingHours < halfDayHours) {
+                status = AttendanceStatus.HALF_DAY;
+            } else if (prev.getStatus() == AttendanceStatus.LATE) {
+                status = AttendanceStatus.LATE;
+            } else {
+                status = AttendanceStatus.PRESENT;
+            }
+
+            prev.setCheckOut(autoCheckOut);
+            prev.setWorkingHours(workingHours);
+            prev.setStatus(status);
+            attendanceRepository.save(prev);
+        });
     }
 
     private record Aggregates(long present, long absent, long late, long halfDay, long onLeave,

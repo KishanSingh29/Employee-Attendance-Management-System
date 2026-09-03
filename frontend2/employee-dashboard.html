@@ -162,7 +162,10 @@
 
     document.getElementById("tsIn").textContent = formatTime(inT);
     document.getElementById("tsOut").textContent = formatTime(outT);
-    document.getElementById("tsHours").textContent = (outT && inT) ? formatHours(hours) : "—";
+    document.getElementById("tsHours").textContent =
+      (inT && !outT) ? "In Progress ⏳"
+      : (inT && outT) ? formatHours(hours)
+      : "—";
 
     const badge = document.getElementById("todayBadge");
     badge.outerHTML = getStatusBadge(status).replace("<span ", '<span id="todayBadge" ');
@@ -223,7 +226,7 @@
         <td class="strong">${formatDateLong(pick(r, ["date", "attendanceDate"]))}</td>
         <td class="mono">${formatTime(inT)}</td>
         <td class="mono">${formatTime(outT)}</td>
-        <td class="mono">${formatHours(pick(r, ["workingHours", "workHours", "totalHours", "hours"]))}</td>
+        <td class="mono">${(inT && !outT) ? "In Progress" : formatHours(pick(r, ["workingHours", "workHours", "totalHours", "hours"]))}</td>
         <td>${getStatusBadge(pick(r, ["status"], "PRESENT"))}</td>
       </tr>`;
     }).join("");

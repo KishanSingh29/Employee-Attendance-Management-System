@@ -56,7 +56,7 @@
         <div class="stat top-green"><div class="section-label">Present today</div><div class="stat-value lg" id="stPresent">–</div><div class="stat-sub">includes late and half day</div></div>
         <div class="stat top-red"><div class="section-label">Absent today</div><div class="stat-value lg" id="stAbsent">–</div><div class="stat-sub">no check-in recorded</div></div>
         <div class="stat top-indigo"><div class="section-label">On leave</div><div class="stat-value lg" id="stLeave">–</div><div class="stat-sub">approved leave</div></div>
-        <div class="stat top-amber"><div class="section-label">Late today</div><div class="stat-value lg" id="stLate">–</div><div class="stat-sub">after 09:30 grace</div></div>
+        <div class="stat top-amber"><div class="section-label">Late / Half Day</div><div class="stat-value lg" id="stLate">–</div><div class="stat-sub">after 09:30 or under 4h</div></div>
       </div>
 
       <div class="card">
@@ -139,7 +139,9 @@
     document.getElementById("stPresent").textContent = num(pick(d, ["presentToday", "present", "totalPresent"], 0));
     document.getElementById("stAbsent").textContent = num(pick(d, ["absentToday", "absent", "totalAbsent"], 0));
     document.getElementById("stLeave").textContent = num(pick(d, ["onLeaveToday", "onLeave", "totalOnLeave"], 0));
-    document.getElementById("stLate").textContent = num(pick(d, ["lateToday", "late", "totalLate"], 0));
+    const lateToday = num(pick(d, ["lateToday", "late", "totalLate"], 0));
+    const halfDayToday = num(pick(d, ["halfDayToday", "halfDay", "totalHalfDay"], 0));
+    document.getElementById("stLate").textContent = lateToday + halfDayToday;
   }
 
   let attRows = [];

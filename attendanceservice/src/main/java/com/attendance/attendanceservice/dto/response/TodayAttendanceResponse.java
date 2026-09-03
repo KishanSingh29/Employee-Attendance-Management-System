@@ -12,21 +12,27 @@ public record TodayAttendanceResponse(
         @JsonFormat(pattern = "HH:mm:ss") LocalTime checkIn,
         @JsonFormat(pattern = "HH:mm:ss") LocalTime checkOut,
         Double workingHours,
+        String workingHoursDisplay,
         AttendanceStatus status,
         boolean checkedIn
 ) {
 
     public static TodayAttendanceResponse from(Attendance a) {
+        boolean inProgress = a.getCheckIn() != null && a.getCheckOut() == null;
+        String display = inProgress
+                ? "In Progress"
+                : (a.getWorkingHours() != null ? String.valueOf(a.getWorkingHours()) : null);
         return new TodayAttendanceResponse(
                 a.getDate(),
                 a.getCheckIn(),
                 a.getCheckOut(),
                 a.getWorkingHours(),
+                display,
                 a.getStatus(),
                 a.getCheckIn() != null);
     }
 
     public static TodayAttendanceResponse notCheckedIn(LocalDate date) {
-        return new TodayAttendanceResponse(date, null, null, null, AttendanceStatus.ABSENT, false);
+        return new TodayAttendanceResponse(date, null, null, null, null, AttendanceStatus.ABSENT, false);
     }
 }
